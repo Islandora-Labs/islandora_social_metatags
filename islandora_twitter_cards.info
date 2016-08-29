@@ -1,0 +1,7 @@
+
+name = Islandora Twitter Cards
+version = 7.x-dev
+core = 7.x
+description = Adds Twitter cards to your meta tags.
+dependencies[] = islandora
+package = Islandora Tools
