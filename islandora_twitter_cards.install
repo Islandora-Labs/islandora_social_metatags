@@ -1,0 +1,17 @@
+<?php
+/**
+ * @file
+ * Installation hooks for Islandora Twitter Cards.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function islandora_badges_uninstall() {
+  $vars = array(
+    'islandora_twitter_cards_title_xpath',
+    'islandora_twitter_cards_abstract_xpath',
+    'islandora_twitter_cards_twitter_user'
+  );
+  array_walk($vars, 'variable_del');
+}
