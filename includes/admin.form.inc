@@ -4,7 +4,7 @@
  * Admin form functions for Islandora Altmetrics.
  */
 /**
- * Admin form for Islandora Badges.
+ * Admin form for Islandora Twitter Cards
  */
 function islandora_twitter_cards_admin_form($form, $form_settings) {
   $form['islandora_twitter_cards_title_xpath'] = array(
