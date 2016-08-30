@@ -52,7 +52,7 @@ function islandora_twitter_cards_islandora_view_object() {
   if (!$title) {
     return;
   }
-  
+
   // Get Abstract
   $doc = new DOMDocument();
   $doc->loadXML($object['MODS']->content);
@@ -61,11 +61,10 @@ function islandora_twitter_cards_islandora_view_object() {
   $xpath_results = $xpath->query(
     variable_get('islandora_twitter_cards_abstract_xpath', '/mods:mods/mods:abstract')
   );
-  if ($xpath_results->length == 0) {
-    return;
-  }
   $abstract = $xpath_results->item(0)->nodeValue;
-  
+
+  $pid = $object->id;
+
   // Get Image path
   if (in_array('ir:citationCModel', $object->models)) {
         $imageDatastream = "PREVIEW";
@@ -83,21 +82,19 @@ function islandora_twitter_cards_islandora_view_object() {
     $imageDatastream = "TN";
   }
   
-  $image = "/islandora/object/" . $pid . "/" . $imageDatastream . '/view';
-  
-  // Get Twitter user
-  $twitterUser = variable_get('islandora_twitter_cards_twitter_user');
-  
+  $image = "/islandora/object/" . $pid . "/" . $imageDatastream . "/view";
+
+  // Get Twitter user - DELETE DEFAULT WHEN READY
+  $twitterUser = variable_get('islandora_twitter_cards_twitter_user', "@arca_bc");
+
   // Get card type - turns out that this is the only option
   $cardType = "summary_large_image";
 
 /*
  * Implements hook_html_head_alter
  */
-/* First we'll test the other one.
+/* First we'll test the other one. 
 function template_html_head_alter(&$head_elements) {
-  
-  
   // Add the requisite Twitter meta tags to <head>
   $head_elements = array(
     '#type' => 'html_tag',
@@ -108,14 +105,81 @@ function template_html_head_alter(&$head_elements) {
 }
 */
 
+/*
+* Implements drupal_add_html_head()
+*/
 
+$tags = array(
+  'Twitter card' => array(
+    '#tag' => 'meta',
+    '#attributes' => array(
+      'name' => 'twitter:card',
+      'content' => $cardType
+    )
+  )
+);
 
+foreach ($tags as $key => $val) {
+  drupal_add_html_head($val, $key);
+}
 
+$tags = array(
+  'Twitter Title' => array(
+    '#tag' => 'meta',
+    '#attributes' => array(
+      'name' => 'twitter:title',
+      'content' => $title
+    )
+  )
+);
 
-/* To do:
-Here's the set of meta tags:
-'
-<meta name="twitter:card" content="' . $cardType . '">
+foreach ($tags as $key => $val) {
+  drupal_add_html_head($val, $key);
+}
+
+$tags = array(
+  'Twitter image' => array(
+    '#tag' => 'meta',
+    '#attributes' => array(
+      'name' => 'twitter:image',
+      'content' => $image
+    )
+  )
+);
+
+foreach ($tags as $key => $val) {
+  drupal_add_html_head($val, $key);
+}
+
+$tags = array(
+  'Twitter site user' => array(
+    '#tag' => 'meta',
+    '#attributes' => array(
+      'name' => 'twitter:site',
+      'content' => $twitterUser
+    )
+  )
+);
+
+foreach ($tags as $key => $val) {
+  drupal_add_html_head($val, $key);
+}
+
+$tags = array(
+  'Twitter description' => array(
+    '#tag' => 'meta',
+    '#attributes' => array(
+      'name' => 'twitter:description',
+      'content' => $abstract 
+    )
+  )
+);
+
+foreach ($tags as $key => $val) {
+  drupal_add_html_head($val, $key);
+}
+
+/*
 <meta name="twitter:site" content="' . $twitterUser . '">
 <meta name="twitter:title" content="' . $title . '">
 <meta name="twitter:description" content="' . $abstract . '">
@@ -135,6 +199,9 @@ Figure out which hook to use to interrupt the theme
 /*
 * Implements drupal_add_html_head
 */
+
+/* This doesn't work...
+
 $cardTypeElement = array(
   '#tag' => 'meta', // The #tag is the html tag - 
   '#attributes' => array( // Set up an array of attributes inside the tag
@@ -176,4 +243,7 @@ drupal_add_html_head($siteElement);
 drupal_add_html_head($titleElement);
 drupal_add_html_head($descElement);
 drupal_add_html_head($imageElement);
+
+*/
+
 }
