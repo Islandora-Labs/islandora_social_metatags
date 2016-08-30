@@ -62,16 +62,34 @@ function islandora_twitter_cards_menu() {
   $abstract = $xpath_results->item(0)->nodeValue;
   
   // Get Image path
+  if (in_array('ir:citationCModel', $object->models)) {
+        $imageDatastream = "PREVIEW";
+  }
+  elseif (in_array('ir:thesisCModel', $object->models)) {
+    $imageDatastream = "PREVIEW";
+  }
+  elseif (in_array('islandora:sp_large_image_cmodel', $object->models)) {
+    $imageDatastream = "JPG";
+  }
+  elseif (in_array('islandora:sp_basic_image', $object->models)) {
+    $imageDatastream = "MEDIUM_SIZE";
+  }
+    elseif (in_array('islandora:sp_videoCModel', $object->models)) {
+    $imageDatastream = "TN";
+  }
   
+  $image = "/islandora/object/" . $pid . "/" . $imageDatastream . '/view';
   
   // Get Twitter user
   $twitterUser = variable_get('islandora_twitter_cards_twitter_user');
   
-
+  // Get card type
+  $cardType = variable_get('islandora_twitter_cards_card_type');
 
 /*
  * Implements hook_html_head_alter
  */
+/* First we'll test the other one.
 function template_html_head_alter(&$head_elements) {
   
   
@@ -83,27 +101,12 @@ function template_html_head_alter(&$head_elements) {
     '#weight' => -1001,
   );
 }
+*/
 
 
 
 
 
-
-/**
- * Implements hook_block_info(). Creates blocks.
- * DRUPAL_CACHE_PER_PAGE set so that not too many API calls are made.
- */
-/* Don't think we actually need a block...
-function islandora_twitter_cards_block_info() {
-  return array(
-    'islandora_twitter_cards_menu' => array(
-      'visibility' => BLOCK_VISIBILITY_LISTED,
-      'pages' => 'islandora/object/*',
-      'cache' => DRUPAL_CACHE_PER_PAGE,
-      'info' => t('Islandora Twitter Cards'),
-    ); 
-  }
-*/ 
 /* To do:
 Here's the set of meta tags:
 '
