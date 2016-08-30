@@ -80,8 +80,8 @@ function islandora_twitter_cards_islandora_view_object() {
     elseif (in_array('islandora:sp_videoCModel', $object->models)) {
     $imageDatastream = "TN";
   }
-  
-  $image = "/islandora/object/" . $pid . "/" . $imageDatastream . "/view";
+  global $base_url;
+  $image = $base_url . "/islandora/object/" . $pid . "/datastream/" . $imageDatastream . "/view";
 
   // Get Twitter user - DELETE DEFAULT WHEN READY
   $twitterUser = variable_get('islandora_twitter_cards_twitter_user');
