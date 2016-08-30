@@ -21,10 +21,79 @@ function islandora_twitter_cards_menu() {
   );
 }
 
+/* To do: 
+* Grab content model
+* Choose twitter card type based on content model?
+* Pick image datastream based on content model anyway
+*/
+
+ // first grab the MODS metadata and set all variables
+  $object = menu_get_object('islandora_object', 2);
+  // Get Title.
+  if (!isset($object['MODS'])) {
+      return;
+     }
+  $doc = new DOMDocument();
+  $doc->loadXML($object['MODS']->content);
+  $xpath = new DOMXPath($doc);
+  $xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3');
+  $xpath_results = $xpath->query(
+    variable_get('islandora_twitter_cards_title_xpath', '/mods:mods/mods:titleInfo/mods:title')
+  );
+  if ($xpath_results->length == 0) {
+    return;
+  }
+  $title = $xpath_results->item(0)->nodeValue;
+  if (!$title) {
+    return;
+  }
+  
+  // Get Abstract
+  $doc = new DOMDocument();
+  $doc->loadXML($object['MODS']->content);
+  $xpath = new DOMXPath($doc);
+  $xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3');
+  $xpath_results = $xpath->query(
+    variable_get('islandora_twitter_cards_abstract_xpath', '/mods:mods/mods:abstract')
+  );
+  if ($xpath_results->length == 0) {
+    return;
+  }
+  $abstract = $xpath_results->item(0)->nodeValue;
+  
+  // Get Image path
+  
+  
+  // Get Twitter user
+  $twitterUser = variable_get('islandora_twitter_cards_twitter_user');
+  
+
+
+/*
+ * Implements hook_html_head_alter
+ */
+function template_html_head_alter(&$head_elements) {
+  
+  
+  // Add the requisite Twitter meta tags to <head>
+  $head_elements = array(
+    '#type' => 'html_tag',
+    '#tag' => 'meta',
+    '#attributes' => array('name' => 'twitter:card', 'content' => $cardType),
+    '#weight' => -1001,
+  );
+}
+
+
+
+
+
+
 /**
  * Implements hook_block_info(). Creates blocks.
  * DRUPAL_CACHE_PER_PAGE set so that not too many API calls are made.
  */
+/* Don't think we actually need a block...
 function islandora_twitter_cards_block_info() {
   return array(
     'islandora_twitter_cards_menu' => array(
@@ -34,7 +103,7 @@ function islandora_twitter_cards_block_info() {
       'info' => t('Islandora Twitter Cards'),
     ); 
   }
-
+*/ 
 /* To do:
 Here's the set of meta tags:
 '
@@ -99,158 +168,3 @@ drupal_add_html_head($siteElement);
 drupal_add_html_head($titleElement);
 drupal_add_html_head($descElement);
 drupal_add_html_head($imageElement);
-
-
-/**
- * Implements hook_block_view().
- */
- 
-function islandora_badges_block_view($delta) {
-  $to_render = array();
-
-  // Get object metadata - i.e. DOI
-  $object = menu_get_object('islandora_object', 2);
-      // Get DOI.
-  if (!isset($object['MODS'])) {
-      return;
-     }
-    $doc = new DOMDocument();
-    $doc->loadXML($object['MODS']->content);
-    $xpath = new DOMXPath($doc);
-    $xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3');
-    $xpath_results = $xpath->query(
-      variable_get('islandora_badges_doi_xpath', '/mods:mods/mods:identifier[@type="doi"]')
-    );
-    if ($xpath_results->length == 0) {
-      return;
-    }
-    $doi = $xpath_results->item(0)->nodeValue;
-    if (!$doi) {
-      return;
-    }
-
-  switch ($delta) {
-    // Load the Altmetrics block
-    case 'islandora_badges_altmetrics':
-      // Embed Altmetrics.
-      $to_render['content']['altmetrics'] = array(
-        '#type' => 'container',
-        '#attributes' => array(
-          'class' => array('altmetric-embed'),
-          'data-badge-type' => variable_get('islandora_badges_altmetrics_badge', 'Default'),
-          'data-doi' => $doi,
-          'data-badge-popover' => variable_get('islandora_badges_altmetrics_popover', 'right'),
-          'data-hide-no-mentions' => 'true',
-        ),
-      );
-      drupal_add_js('https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js', 'external');
-      break;
- 
-  // Load the Scopus block
-   case 'islandora_badges_scopus':
-      // Embed Scopus.
-      // Assemble the Scopus API request URL
-      $api_key = variable_get('islandora_badges_scopus_api_key', 'b3a71de2bde04544495881ed9d2f9c5b');
-      $scopus_url = "http://api.elsevier.com:80/content/abstract/citation-count?doi=" .
-        urlencode($doi) . "&apiKey=" . $api_key . "&httpAccept=text%2Fhtml";
-      // Hit the API.
-      $response = drupal_http_request($scopus_url);
-      if (preg_match('/alt=\"unavailable\"/', $response->data)) {
-        return;
-      }
-      else {
-        $to_render['content'] = $response->data;
-      }
-      break;
-
-/** Web of Science block */
-   case 'islandora_badges_wos':
-    // Embed Web of Science.
-
-    // Get the WoS AMR username and password from the admin config.
-      $wos_username = variable_get('islandora_badges_wos_username');
-      $wos_password = variable_get('islandora_badges_wos_password');
-
-    // Set API endpoint URL
-      $url = "https://ws.isiknowledge.com/cps/xrpc";
-
-
-    //Store your XML Request in a string - not ideal but I don't know how to send an XML file by POST (ha ha)
-      $input_xml = '<?xml version="1.0" encoding="UTF-8" ?>
-      <request xmlns="http://www.isinet.com/xrpc42" src="app.id=API Demo">
-        <fn name="LinksAMR.retrieve">
-          <list>
-            <!-- WHO IS REQUESTING -->
-            <map>   
-              <val name="username">' . $wos_username . '</val>       
-              <val name="password">' . $wos_password . '</val>            
-            </map>
-            <!-- WHAT IS REQUESTED -->
-            <map>
-              <list name="WOS">
-                <val>timesCited</val>
-                <val>citingArticlesURL</val>
-              </list>
-            </map>
-            <!-- LOOKUP DATA -->
-            <map>  
-              <map name="cite_1">
-                <val name="doi">' . $doi . '</val>
-              </map>
-            </map>
-          </list>
-        </fn>
-      </request>';
-
-    // Post the request and get results!
-      
-      $result = drupal_http_request($url, array(
-        'headers' => array('Content-Type' => 'text/xml'),
-        'data' => $input_xml,
-        'method' => 'POST',
-        'timeout' => 10
-      ));
-
-    // Convert the response to an array and remove the CDATA tags
-
-      $wos_result = simplexml_load_string($result->data, 'SimpleXMLElement', LIBXML_NOCDATA);
-
-    // Default - zero citations -- should this really be present?
-      $timesCited = 0;
-
-    // Default - citingArticlesURL - no citing articles = empty array
-      $citingArticlesURL = array();
-
-    // Get the values into the variables
-
-      foreach ($wos_result->fn->map->map->map->val as $val) {
-	switch((string) $val['name']) { // Get attributes as element indices
-		case 'timesCited':
-			$timesCited = $val[0];
-			break;
-		case 'citingArticlesURL':
-			// URL is child node of <val name="citingArticlesURL"> in CDATA section.
-			// We need to pull this out.
-			// Possible that there could be multiple citingArticlesURL values and thus needs an array... Is this true?
-
-			$citingArticlesURL = $val[0];
-
-			break;
-		}
-	}
-
-
-    // If there is no error return data
-      if (empty($result ->error)) {
-          $badgeType = variable_get('islandora_badges_wos_badgetype');
-	  if ($badgeType == 1) {
-		$to_render['content'] = '<div class="wos_badge"><a href="' . $citingArticlesURL . '" target="_blank">Web of Science citations: ' . $timesCited . '</a></div>';
-	  }
-	  elseif ($badgeType == 0)  {
-          	$to_render['content'] = '<a href="' . $citingArticlesURL . '" target="_blank"><img src=https://img.shields.io/badge/Web%20of%20Science%20citations-' . $timesCited . '-orange.svg?style=flat"></img></a>';
-	  }
-      }
-      
-    }
-    return $to_render;
-  }
