@@ -14,7 +14,7 @@ function islandora_twitter_cards_admin_form($form, $form_settings) {
   $form['islandora_twitter_cards_abstract_xpath'] = array(
     '#type' => 'textfield',
     '#title' => t('Abstract XPath'),
-    '#description' => t('MODS XPath for retrieving the abstract.'),
+    '#description' => t('MODS XPath for the Description field. Defaults to mods:abstract.'),
     '#default_value' => variable_get('islandora_twitter_cards_abstract_xpath', '/mods:mods/mods:titleInfo/mods:abstract'),
   );
   
