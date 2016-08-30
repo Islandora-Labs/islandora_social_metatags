@@ -27,6 +27,11 @@ function islandora_twitter_cards_menu() {
 * Pick image datastream based on content model anyway
 */
 
+
+/*
+* Implements hook_islandora_view_object()
+*/
+function islandora_twitter_cards_islandora_view_object() {
  // first grab the MODS metadata and set all variables
   $object = menu_get_object('islandora_object', 2);
   // Get Title.
@@ -171,3 +176,4 @@ drupal_add_html_head($siteElement);
 drupal_add_html_head($titleElement);
 drupal_add_html_head($descElement);
 drupal_add_html_head($imageElement);
+}
