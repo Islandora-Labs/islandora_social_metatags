@@ -54,11 +54,17 @@ function islandora_twitter_cards_islandora_view_object() {
   $xpath_results = $xpath->query(
     variable_get('islandora_twitter_cards_abstract_xpath', '/mods:mods/mods:abstract')
   );
-  $abstract = $xpath_results->item(0)->nodeValue;
+
+  if ($xpath_results->length == 0) {
+    $abstract = "";
+  }
+  else {
+    $abstract = $xpath_results->item(0)->nodeValue;
+  }
 
   $pid = $object->id;
 
-  // Get Image path
+  // Get Image path. TO DO: Error handling if no image exists.
   if (in_array('ir:citationCModel', $object->models)) {
         $imageDatastream = "PREVIEW";
   }
@@ -78,7 +84,7 @@ function islandora_twitter_cards_islandora_view_object() {
   $image = "/islandora/object/" . $pid . "/" . $imageDatastream . "/view";
 
   // Get Twitter user - DELETE DEFAULT WHEN READY
-  $twitterUser = variable_get('islandora_twitter_cards_twitter_user', "@arca_bc");
+  $twitterUser = variable_get('islandora_twitter_cards_twitter_user');
 
   // Turns out that Twitter no longer recognizes older card types, so this is the only option.
   $cardType = "summary_large_image";

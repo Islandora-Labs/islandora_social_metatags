@@ -1,9 +1,6 @@
 <?php
 /**
  * @file
- * Admin form functions for Islandora Altmetrics.
- */
-/**
  * Admin form for Islandora Twitter Cards
  */
 function islandora_twitter_cards_admin_form($form, $form_settings) {
@@ -27,4 +24,6 @@ function islandora_twitter_cards_admin_form($form, $form_settings) {
     '#description' => t('The Twitter handle for your site or admin. Required. Must begin with @'),
     '#default_value' => variable_get('islandora_twitter_cards_twitter_user', '@nobody'),
   );
+
+  return system_settings_form($form);
 }
