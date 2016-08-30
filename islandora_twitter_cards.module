@@ -83,8 +83,8 @@ function islandora_twitter_cards_menu() {
   // Get Twitter user
   $twitterUser = variable_get('islandora_twitter_cards_twitter_user');
   
-  // Get card type
-  $cardType = variable_get('islandora_twitter_cards_card_type');
+  // Get card type - turns out that this is the only option
+  $cardType = "summary_large_image";
 
 /*
  * Implements hook_html_head_alter
