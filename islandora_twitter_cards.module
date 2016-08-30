@@ -21,13 +21,6 @@ function islandora_twitter_cards_menu() {
   );
 }
 
-/* To do: 
-* Grab content model
-* Choose twitter card type based on content model?
-* Pick image datastream based on content model anyway
-*/
-
-
 /*
 * Implements hook_islandora_view_object()
 */
@@ -87,163 +80,81 @@ function islandora_twitter_cards_islandora_view_object() {
   // Get Twitter user - DELETE DEFAULT WHEN READY
   $twitterUser = variable_get('islandora_twitter_cards_twitter_user', "@arca_bc");
 
-  // Get card type - turns out that this is the only option
+  // Turns out that Twitter no longer recognizes older card types, so this is the only option.
   $cardType = "summary_large_image";
-
-/*
- * Implements hook_html_head_alter
- */
-/* First we'll test the other one. 
-function template_html_head_alter(&$head_elements) {
-  // Add the requisite Twitter meta tags to <head>
-  $head_elements = array(
-    '#type' => 'html_tag',
-    '#tag' => 'meta',
-    '#attributes' => array('name' => 'twitter:card', 'content' => $cardType),
-    '#weight' => -1001,
-  );
-}
-*/
 
 /*
 * Implements drupal_add_html_head()
 */
 
-$tags = array(
-  'Twitter card' => array(
-    '#tag' => 'meta',
-    '#attributes' => array(
-      'name' => 'twitter:card',
-      'content' => $cardType
+  $tags = array(
+    'Twitter card' => array(
+      '#tag' => 'meta',
+      '#attributes' => array(
+        'name' => 'twitter:card',
+        'content' => $cardType
+      )
     )
-  )
-);
+  );
 
-foreach ($tags as $key => $val) {
-  drupal_add_html_head($val, $key);
-}
+  foreach ($tags as $key => $val) {
+    drupal_add_html_head($val, $key);
+  }
 
-$tags = array(
-  'Twitter Title' => array(
-    '#tag' => 'meta',
-    '#attributes' => array(
-      'name' => 'twitter:title',
-      'content' => $title
+  $tags = array(
+    'Twitter Title' => array(
+      '#tag' => 'meta',
+      '#attributes' => array(
+        'name' => 'twitter:title',
+        'content' => $title
+      )
     )
-  )
-);
+  );
 
-foreach ($tags as $key => $val) {
-  drupal_add_html_head($val, $key);
-}
+  foreach ($tags as $key => $val) {
+    drupal_add_html_head($val, $key);
+  }
 
-$tags = array(
-  'Twitter image' => array(
-    '#tag' => 'meta',
-    '#attributes' => array(
-      'name' => 'twitter:image',
-      'content' => $image
+  $tags = array(
+    'Twitter image' => array(
+      '#tag' => 'meta',
+      '#attributes' => array(
+        'name' => 'twitter:image',
+        'content' => $image
+      )
     )
-  )
-);
+  );
 
-foreach ($tags as $key => $val) {
-  drupal_add_html_head($val, $key);
-}
+  foreach ($tags as $key => $val) {
+    drupal_add_html_head($val, $key);
+  }
 
-$tags = array(
-  'Twitter site user' => array(
-    '#tag' => 'meta',
-    '#attributes' => array(
-      'name' => 'twitter:site',
-      'content' => $twitterUser
+  $tags = array(
+    'Twitter site user' => array(
+      '#tag' => 'meta',
+      '#attributes' => array(
+        'name' => 'twitter:site',
+        'content' => $twitterUser
+      )
     )
-  )
-);
+  );
 
-foreach ($tags as $key => $val) {
-  drupal_add_html_head($val, $key);
-}
+  foreach ($tags as $key => $val) {
+    drupal_add_html_head($val, $key);
+  }
 
-$tags = array(
-  'Twitter description' => array(
-    '#tag' => 'meta',
-    '#attributes' => array(
-      'name' => 'twitter:description',
-      'content' => $abstract 
+  $tags = array(
+    'Twitter description' => array(
+      '#tag' => 'meta',
+      '#attributes' => array(
+        'name' => 'twitter:description',
+        'content' => $abstract 
+      )
     )
-  )
-);
+  );
 
-foreach ($tags as $key => $val) {
-  drupal_add_html_head($val, $key);
-}
-
-/*
-<meta name="twitter:site" content="' . $twitterUser . '">
-<meta name="twitter:title" content="' . $title . '">
-<meta name="twitter:description" content="' . $abstract . '">
-<meta name="twitter:image" content="' . $imageLink . '">'
-
-Add config stuff, including option to change the type of card
-Figure out how to grab an image for non-image types of content
-Figure out which hook to use to interrupt the theme
-*/
-
-/* FIRST: pull data from the form
-* THEN: pull data from the object
-* Then, execute the stuff below.
-*/
-
-
-/*
-* Implements drupal_add_html_head
-*/
-
-/* This doesn't work...
-
-$cardTypeElement = array(
-  '#tag' => 'meta', // The #tag is the html tag - 
-  '#attributes' => array( // Set up an array of attributes inside the tag
-    'name' => 'twitter:card', 
-    'content' => $cardType,
-  ),
-);
-$siteElement = array(
-  '#tag' => 'meta', // The #tag is the html tag - 
-  '#attributes' => array( // Set up an array of attributes inside the tag
-    'name' => 'twitter:site', 
-    'content' => $twitterUser,
-  ),
-);
-$titleElement = array(
-  '#tag' => 'meta', // The #tag is the html tag - 
-  '#attributes' => array( // Set up an array of attributes inside the tag
-    'name' => 'twitter:title', 
-    'content' => $title,
-  ),
-);
-$descElement = array(
-  '#tag' => 'meta', // The #tag is the html tag - 
-  '#attributes' => array( // Set up an array of attributes inside the tag
-    'name' => 'twitter:description', 
-    'content' => $abstract,
-  ),
-);
-$imageElement = array(
-  '#tag' => 'meta', // The #tag is the html tag - 
-  '#attributes' => array( // Set up an array of attributes inside the tag
-    'name' => 'twitter:image', 
-    'content' => $image,
-  ),
-);
-
-drupal_add_html_head($cardTypeElement);
-drupal_add_html_head($siteElement);
-drupal_add_html_head($titleElement);
-drupal_add_html_head($descElement);
-drupal_add_html_head($imageElement);
-
-*/
+  foreach ($tags as $key => $val) {
+    drupal_add_html_head($val, $key);
+  }
 
 }
