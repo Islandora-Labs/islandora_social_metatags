@@ -24,6 +24,11 @@ function islandora_twitter_cards_admin_form($form, $form_settings) {
     '#description' => t('The Twitter handle for your site or admin. Required. Must begin with @'),
     '#default_value' => variable_get('islandora_twitter_cards_twitter_user', '@nobody'),
   );
-
+  $form['islandora_twitter_cards_no_description'] = array(
+    '#type' => 'textfield',
+    '#title' => t('No Description message'),
+    '#description' => t('The message to use if no abstract or other desciption element is present.'),
+    '#default_value' => variable_get('islandora_twitter_cards_no_description', 'No description given.'),
+  );
   return system_settings_form($form);
 }
