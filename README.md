@@ -6,6 +6,14 @@ Add Twitter Cards meta tags to your site without hacking the theme.
 
 Islandora Twitter Cards adds Twitter-recognized meta tags to the HTML headers on Islandora objects based on MODS metadata. These tags enable Twitter to render Twitter Cards when Islandora content is tweeted.
 
+**Before:**
+
+![](https://s16.postimg.org/3mq40cwox/Screen_Shot_2016_08_31_at_9_23_35_AM.png)
+
+**After:**
+
+![](https://s16.postimg.org/6uuldeiyp/Screen_Shot_2016_08_31_at_9_24_14_AM.png)
+
 ## Requirements
 
 This module requires the following modules/libraries:
