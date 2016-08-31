@@ -77,9 +77,13 @@ function islandora_twitter_cards_islandora_view_object() {
   elseif (in_array('islandora:sp_basic_image', $object->models)) {
     $imageDatastream = "MEDIUM_SIZE";
   }
-    elseif (in_array('islandora:sp_videoCModel', $object->models)) {
+  elseif (in_array('islandora:sp_videoCModel', $object->models)) {
     $imageDatastream = "TN";
   }
+  else {
+    $imageDatastream = "TN";
+  }
+
   global $base_url;
   $image = $base_url . "/islandora/object/" . $pid . "/datastream/" . $imageDatastream . "/view";
 
