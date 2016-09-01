@@ -7,7 +7,7 @@
 /**
  * Implements hook_uninstall().
  */
-function islandora_badges_uninstall() {
+function islandora_twitter_cards_uninstall() {
   $vars = array(
     'islandora_twitter_cards_title_xpath',
     'islandora_twitter_cards_abstract_xpath',
