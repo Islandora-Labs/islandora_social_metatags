@@ -87,7 +87,7 @@ function islandora_twitter_cards_islandora_view_object() {
 
   global $base_url;
   $image = $base_url . "/islandora/object/" . $pid . "/datastream/" . $imageDatastream . "/view";
-
+  $ogURL = $base_url . "/islandora/object/" . $pid;
   // Get Twitter user
   $twitterUser = variable_get('islandora_twitter_cards_twitter_user');
 
@@ -127,10 +127,39 @@ function islandora_twitter_cards_islandora_view_object() {
   }
 
   $tags = array(
+    'Facebook Title' => array(
+      '#tag' => 'meta',
+      '#attributes' => array(
+        'name' => 'og:title',
+        'content' => $title
+      )
+    )
+  );
+
+  foreach ($tags as $key => $val) {
+    drupal_add_html_head($val, $key);
+  }
+
+
+  $tags = array(
     'Twitter image' => array(
       '#tag' => 'meta',
       '#attributes' => array(
         'name' => 'twitter:image',
+        'content' => $image
+      )
+    )
+  );
+
+  foreach ($tags as $key => $val) {
+    drupal_add_html_head($val, $key);
+  }
+
+ $tags = array(
+    'Facebook image' => array(
+      '#tag' => 'meta',
+      '#attributes' => array(
+        'name' => 'og:image',
         'content' => $image
       )
     )
@@ -160,6 +189,48 @@ function islandora_twitter_cards_islandora_view_object() {
       '#attributes' => array(
         'name' => 'twitter:description',
         'content' => $abstract 
+      )
+    )
+  );
+
+  foreach ($tags as $key => $val) {
+    drupal_add_html_head($val, $key);
+  }
+
+  $tags = array(
+    'Facebook description' => array(
+      '#tag' => 'meta',
+      '#attributes' => array(
+        'name' => 'og:description',
+        'content' => $abstract
+      )
+    )
+  );
+
+  foreach ($tags as $key => $val) {
+    drupal_add_html_head($val, $key);
+  }
+
+  $tags = array(
+    'Facebook URL' => array(
+      '#tag' => 'meta',
+      '#attributes' => array(
+        'name' => 'og:url',
+        'content' => $ogURL
+      )
+    )
+  );
+
+  foreach ($tags as $key => $val) {
+    drupal_add_html_head($val, $key);
+  }
+
+  $tags = array(
+    'Facebook site name' => array(
+      '#tag' => 'meta',
+      '#attributes' => array(
+        'name' => 'og:site_name',
+        'content' => 'Arca BC'
       )
     )
   );
