@@ -67,19 +67,19 @@ function islandora_twitter_cards_islandora_view_object() {
 
   // Get Image path. TO DO: Error handling if no image exists.
   if (in_array('ir:citationCModel', $object->models)) {
-        $imageDatastream = "PREVIEW";
+        $imageDatastream = variable_get('islandora_twitter_cards_citation_datastream', 'PREVIEW');
   }
   elseif (in_array('ir:thesisCModel', $object->models)) {
-    $imageDatastream = "PREVIEW";
+    $imageDatastream = variable_get('islandora_twitter_cards_thesis_datastream', 'PREVIEW');
   }
   elseif (in_array('islandora:sp_large_image_cmodel', $object->models)) {
-    $imageDatastream = "JPG";
+   $imageDatastream = variable_get('islandora_twitter_cards_largeimage_datastream', 'JPG');
   }
   elseif (in_array('islandora:sp_basic_image', $object->models)) {
-    $imageDatastream = "MEDIUM_SIZE";
+   $imageDatastream = variable_get('islandora_twitter_cards_basicimage_datastream', 'MEDIUM_SIZE');
   }
   elseif (in_array('islandora:sp_videoCModel', $object->models)) {
-    $imageDatastream = "TN";
+   $imageDatastream = variable_get('islandora_twitter_cards_video_datastream', 'TN');
   }
   else {
     $imageDatastream = "TN";
