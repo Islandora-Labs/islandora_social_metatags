@@ -88,7 +88,7 @@ function islandora_twitter_cards_islandora_view_object() {
   global $base_url;
   $image = $base_url . "/islandora/object/" . $pid . "/datastream/" . $imageDatastream . "/view";
 
-  // Get Twitter user - DELETE DEFAULT WHEN READY
+  // Get Twitter user
   $twitterUser = variable_get('islandora_twitter_cards_twitter_user');
 
   // Turns out that Twitter no longer recognizes older card types, so this is the only option.
