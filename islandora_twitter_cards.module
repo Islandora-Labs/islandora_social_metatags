@@ -95,7 +95,7 @@ function islandora_twitter_cards_islandora_view_object() {
   $cardType = "summary_large_image";
 
 /*
-* Implements drupal_add_html_head()
+* Implements drupal_add_html_head() to inject the meta tags
 */
 
   $tags = array(
@@ -130,7 +130,7 @@ function islandora_twitter_cards_islandora_view_object() {
     'Facebook Title' => array(
       '#tag' => 'meta',
       '#attributes' => array(
-        'name' => 'og:title',
+        'property' => 'og:title',
         'content' => $title
       )
     )
@@ -159,7 +159,7 @@ function islandora_twitter_cards_islandora_view_object() {
     'Facebook image' => array(
       '#tag' => 'meta',
       '#attributes' => array(
-        'name' => 'og:image',
+        'property' => 'og:image',
         'content' => $image
       )
     )
@@ -201,7 +201,7 @@ function islandora_twitter_cards_islandora_view_object() {
     'Facebook description' => array(
       '#tag' => 'meta',
       '#attributes' => array(
-        'name' => 'og:description',
+        'property' => 'og:description',
         'content' => $abstract
       )
     )
@@ -215,7 +215,7 @@ function islandora_twitter_cards_islandora_view_object() {
     'Facebook URL' => array(
       '#tag' => 'meta',
       '#attributes' => array(
-        'name' => 'og:url',
+        'property' => 'og:url',
         'content' => $ogURL
       )
     )
@@ -226,11 +226,27 @@ function islandora_twitter_cards_islandora_view_object() {
   }
 
   $tags = array(
+    'Object type' => array(
+      '#tag' => 'meta',
+      '#attributes' => array(
+        'property' => 'og:type',
+        'content' => 'article'
+      )
+    )
+  );
+
+  foreach ($tags as $key => $val) {
+    drupal_add_html_head($val, $key);
+  }
+
+  $site_name = variable_get('site_name', 'Drupal');
+
+  $tags = array(
     'Facebook site name' => array(
       '#tag' => 'meta',
       '#attributes' => array(
-        'name' => 'og:site_name',
-        'content' => 'Arca BC'
+        'property' => 'og:site_name',
+        'content' => $site_name
       )
     )
   );
