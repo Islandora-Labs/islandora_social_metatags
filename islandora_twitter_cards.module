@@ -56,7 +56,7 @@ function islandora_twitter_cards_islandora_view_object() {
   );
 
   // If there is no Abstract field, use a default message.
-  if ($xpath_results->length == 0) {
+  if ($xpath_results->length <= 1) {
     $abstract = variable_get('islandora_twitter_cards_no_description', 'No description given.');
   }
   else {
