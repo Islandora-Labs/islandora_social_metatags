@@ -11,7 +11,14 @@ function islandora_twitter_cards_uninstall() {
   $vars = array(
     'islandora_twitter_cards_title_xpath',
     'islandora_twitter_cards_abstract_xpath',
-    'islandora_twitter_cards_twitter_user'
+    'islandora_twitter_cards_twitter_user',
+    'islandora_twitter_cards_no_description',
+    'islandora_twitter_cards_largeimage_datastream',
+    'islandora_twitter_cards_basicimage_datastream',
+    'islandora_twitter_cards_video_datastream',
+    'islandora_twitter_cards_citation_datastream',
+    'islandora_twitter_cards_thesis_datastream',
+    'islandora_twitter_cards_noimage'
   );
   array_walk($vars, 'variable_del');
 }
