@@ -60,5 +60,11 @@ function islandora_twitter_cards_admin_form($form, $form_settings) {
     '#description' => t('Image datastream to use for Thesis objects'),
     '#default_value' => variable_get('islandora_twitter_cards_thesis_datastream', 'PREVIEW'),
   );
+  $form['islandora_twitter_cards_noimage'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Path to image if image datastream does not exist'),
+    '#description' => t('If the above Image datastreams do not exist for a given object, use a basic default. Use a relative path.'),
+    '#default_value' => variable_get('islandora_twitter_cards_noimage', '/sites/all/modules/islandora/images/folder.png'),
+  );
   return system_settings_form($form);
 }

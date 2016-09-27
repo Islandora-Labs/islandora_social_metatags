@@ -88,6 +88,23 @@ function islandora_twitter_cards_islandora_view_object() {
   global $base_url;
   $image = $base_url . "/islandora/object/" . $pid . "/datastream/" . $imageDatastream . "/view";
 
+// Check whether the image datastream actually exists..
+
+  $file = $image;
+  $file_headers = @get_headers($file);
+
+  if(!$file_headers || strpos($file_headers[0], '404')) {
+	$exists = false;
+  }
+  else {
+	$exists = true;
+  }
+ 
+// If the datastream does not exist, use the default image path. 
+  if(!$exists) {
+	$image = $base_url . variable_get('islandora_twitter_cards_noimage', '/sites/all/modules/islandora/images/folder.png');
+  }
+
   // Get Twitter user
   $twitterUser = variable_get('islandora_twitter_cards_twitter_user');
 
