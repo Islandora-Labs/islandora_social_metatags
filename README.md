@@ -1,6 +1,7 @@
 # Islandora Twitter Cards
 
 Add Twitter Cards meta tags to your site without hacking the theme.
+Adds Facebook meta tags too, but I haven't changed the module's name yet.
 
 ## Introduction
 
