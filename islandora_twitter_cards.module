@@ -87,7 +87,7 @@ function islandora_twitter_cards_islandora_view_object() {
 
   global $base_url;
   $image = $base_url . "/islandora/object/" . $pid . "/datastream/" . $imageDatastream . "/view";
-
+  $ogURL = $base_url . "/islandora/object" . $pid;
 // Check whether the image datastream actually exists..
 
   $file = $image;
@@ -112,7 +112,7 @@ function islandora_twitter_cards_islandora_view_object() {
   $cardType = "summary_large_image";
 
 /*
-* Implements drupal_add_html_head()
+* Implements drupal_add_html_head() to inject the meta tags
 */
 
   $tags = array(
@@ -143,6 +143,22 @@ function islandora_twitter_cards_islandora_view_object() {
     drupal_add_html_head($val, $key);
   }
 
+
+  $tags = array(
+    'Facebook Title' => array(
+      '#tag' => 'meta',
+      '#attributes' => array(
+        'property' => 'og:title',
+        'content' => $title
+      )
+    )
+  );
+
+  foreach ($tags as $key => $val) {
+    drupal_add_html_head($val, $key);
+  }
+
+
   $tags = array(
     'Twitter image' => array(
       '#tag' => 'meta',
@@ -156,6 +172,21 @@ function islandora_twitter_cards_islandora_view_object() {
   foreach ($tags as $key => $val) {
     drupal_add_html_head($val, $key);
   }
+
+  $tags = array(
+    'Facebook image' => array(
+      '#tag' => 'meta',
+      '#attributes' => array(
+        'property' => 'og:image',
+        'content' => $image
+      )
+    )
+  );
+
+  foreach ($tags as $key => $val) {
+    drupal_add_html_head($val, $key);
+  }
+
 
   $tags = array(
     'Twitter site user' => array(
@@ -177,6 +208,64 @@ function islandora_twitter_cards_islandora_view_object() {
       '#attributes' => array(
         'name' => 'twitter:description',
         'content' => $abstract 
+      )
+    )
+  );
+
+  foreach ($tags as $key => $val) {
+    drupal_add_html_head($val, $key);
+  }
+
+  $tags = array(
+    'Facebook description' => array(
+      '#tag' => 'meta',
+      '#attributes' => array(
+        'property' => 'og:description',
+        'content' => $abstract
+      )
+    )
+  );
+
+  foreach ($tags as $key => $val) {
+    drupal_add_html_head($val, $key);
+  }
+
+  $tags = array(
+    'Facebook URL' => array(
+      '#tag' => 'meta',
+      '#attributes' => array(
+        'property' => 'og:url',
+        'content' => $ogURL
+      )
+    )
+  );
+
+  foreach ($tags as $key => $val) {
+    drupal_add_html_head($val, $key);
+  }
+
+  $tags = array(
+    'Object type' => array(
+      '#tag' => 'meta',
+      '#attributes' => array(
+        'property' => 'og:type',
+        'content' => 'article'
+      )
+    )
+  );
+
+  foreach ($tags as $key => $val) {
+    drupal_add_html_head($val, $key);
+  }
+
+  $site_name = variable_get('site_name', 'Islandora');
+
+  $tags = array(
+    'Facebook site name' => array(
+      '#tag' => 'meta',
+      '#attributes' => array(
+        'property' => 'og:site_name',
+        'content' => $site_name
       )
     )
   );
