@@ -67,26 +67,26 @@ function islandora_twitter_cards_islandora_view_object() {
 
   // Get Image path. TO DO: Error handling if no image exists.
   if (in_array('ir:citationCModel', $object->models)) {
-        $imageDatastream = variable_get('islandora_twitter_cards_citation_datastream', 'PREVIEW');
+        $image_datastream = variable_get('islandora_twitter_cards_citation_datastream', 'PREVIEW');
   }
   elseif (in_array('ir:thesisCModel', $object->models)) {
-    $imageDatastream = variable_get('islandora_twitter_cards_thesis_datastream', 'PREVIEW');
+    $image_datastream = variable_get('islandora_twitter_cards_thesis_datastream', 'PREVIEW');
   }
   elseif (in_array('islandora:sp_large_image_cmodel', $object->models)) {
-   $imageDatastream = variable_get('islandora_twitter_cards_largeimage_datastream', 'JPG');
+   $image_datastream = variable_get('islandora_twitter_cards_largeimage_datastream', 'JPG');
   }
   elseif (in_array('islandora:sp_basic_image', $object->models)) {
-   $imageDatastream = variable_get('islandora_twitter_cards_basicimage_datastream', 'MEDIUM_SIZE');
+   $image_datastream = variable_get('islandora_twitter_cards_basicimage_datastream', 'MEDIUM_SIZE');
   }
   elseif (in_array('islandora:sp_videoCModel', $object->models)) {
-   $imageDatastream = variable_get('islandora_twitter_cards_video_datastream', 'TN');
+   $image_datastream = variable_get('islandora_twitter_cards_video_datastream', 'TN');
   }
   else {
-    $imageDatastream = "TN";
+    $image_datastream = "TN";
   }
 
   global $base_url;
-  $image = $base_url . "/islandora/object/" . $pid . "/datastream/" . $imageDatastream . "/view";
+  $image = $base_url . "/islandora/object/" . $pid . "/datastream/" . $image_datastream . "/view";
   $ogURL = $base_url . "/islandora/object" . $pid;
 // Check whether the image datastream actually exists..
 
@@ -94,10 +94,10 @@ function islandora_twitter_cards_islandora_view_object() {
   $file_headers = @get_headers($file);
 
   if(!$file_headers || strpos($file_headers[0], '404')) {
-	$exists = false;
+    $exists = FALSE;
   }
   else {
-	$exists = true;
+    $exists = TRUE;
   }
  
 // If the datastream does not exist, use the default image path. 
@@ -106,10 +106,10 @@ function islandora_twitter_cards_islandora_view_object() {
   }
 
   // Get Twitter user
-  $twitterUser = variable_get('islandora_twitter_cards_twitter_user');
+  $twitter_user = variable_get('islandora_twitter_cards_twitter_user');
 
   // Turns out that Twitter no longer recognizes older card types, so this is the only option.
-  $cardType = "summary_large_image";
+  $card_type = "summary_large_image";
 
 /*
 * Implements drupal_add_html_head() to inject the meta tags
@@ -120,7 +120,7 @@ function islandora_twitter_cards_islandora_view_object() {
       '#tag' => 'meta',
       '#attributes' => array(
         'name' => 'twitter:card',
-        'content' => $cardType
+        'content' => $card_type
       )
     )
   );
@@ -193,7 +193,7 @@ function islandora_twitter_cards_islandora_view_object() {
       '#tag' => 'meta',
       '#attributes' => array(
         'name' => 'twitter:site',
-        'content' => $twitterUser
+        'content' => $twitter_user
       )
     )
   );
