@@ -87,7 +87,7 @@ function islandora_twitter_cards_islandora_view_object() {
 
   global $base_url;
   $image = $base_url . "/islandora/object/" . $pid . "/datastream/" . $image_datastream . "/view";
-  $ogURL = $base_url . "/islandora/object" . $pid;
+  $og_url = $base_url . "/islandora/object" . $pid;
 // Check whether the image datastream actually exists..
 
   $file = $image;
@@ -102,7 +102,7 @@ function islandora_twitter_cards_islandora_view_object() {
  
 // If the datastream does not exist, use the default image path. 
   if(!$exists) {
-	$image = $base_url . variable_get('islandora_twitter_cards_noimage', '/sites/all/modules/islandora/images/folder.png');
+    $image = $base_url . variable_get('islandora_twitter_cards_noimage', '/sites/all/modules/islandora/images/folder.png');
   }
 
   // Get Twitter user
@@ -235,7 +235,7 @@ function islandora_twitter_cards_islandora_view_object() {
       '#tag' => 'meta',
       '#attributes' => array(
         'property' => 'og:url',
-        'content' => $ogURL
+        'content' => $og_url
       )
     )
   );
