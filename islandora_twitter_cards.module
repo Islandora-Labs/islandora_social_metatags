@@ -10,7 +10,7 @@
 function islandora_twitter_cards_menu() {
   return array(
     'admin/islandora/tools/twitter_cards' => array(
-      'title' => 'Islandora Twitter Cards Configuration',
+      'title' => 'Islandora Twitter Cards',
       'description' => 'Configure Twitter cards.',
       'page callback' => 'drupal_get_form',
       'page arguments' => array('islandora_twitter_cards_admin_form'),
