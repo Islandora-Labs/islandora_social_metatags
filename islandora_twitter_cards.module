@@ -93,7 +93,7 @@ function islandora_twitter_cards_islandora_view_object() {
   $file = $image;
   $file_headers = @get_headers($file);
 
-  if( !$file_headers || strpos($file_headers[0], '404')) {
+  if (!$file_headers || strpos($file_headers[0], '404')) {
     $exists = FALSE;
   }
   else {
@@ -101,7 +101,7 @@ function islandora_twitter_cards_islandora_view_object() {
   }
  
 // If the datastream does not exist, use the default image path. 
-  if( !$exists) {
+  if (!$exists) {
     $image = $base_url . variable_get('islandora_twitter_cards_noimage', '/sites/all/modules/islandora/images/folder.png');
   }
 
