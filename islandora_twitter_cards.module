@@ -87,7 +87,7 @@ function islandora_twitter_cards_islandora_view_object() {
 
   global $base_url;
   $image = $base_url . "/islandora/object/" . $pid . "/datastream/" . $image_datastream . "/view";
-  $og_url = $base_url . "/islandora/object" . $pid;
+  $og_url = $base_url . "/islandora/object/" . $pid;
 // Check whether the image datastream actually exists..
 
   $file = $image;
