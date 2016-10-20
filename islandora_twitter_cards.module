@@ -59,6 +59,10 @@ function islandora_twitter_cards_islandora_view_object() {
   if ($xpath_results->length == 0) {
     $abstract = variable_get('islandora_twitter_cards_no_description', 'No description given.');
   }
+  // In case of abstract field <abstract/>, use string length.
+  elseif (strlen($xpath_results->item(0)->nodeValue) == 0) {
+        $abstract = variable_get('islandora_twitter_cards_no_description', 'No description given.');
+  }
   else {
     $abstract = $xpath_results->item(0)->nodeValue;
   }
