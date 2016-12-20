@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Admin form for Islandora Twitter Cards
+ * Admin form for Islandora Social Metatags
  */
 function islandora_social_metatags_admin_form($form, $form_settings) {
   $form['islandora_social_metatags_title_xpath'] = array(
