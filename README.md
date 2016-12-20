@@ -30,7 +30,7 @@ Install as usual, see [this](https://drupal.org/documentation/install/modules-th
 
 Configuration path is admin/islandora/tools/twitter_cards (Administration > Islandora > Islandora Utility Modules > Islandora Twitter Cards Configuration).
 
-There are three fields to configure:
+There are ten fields to configure. Defaults should work for most sites, except for Site Twitter User. 
 
 * Title XPath
    * The XPath to your MODS Title field. Feeds the twitter:title meta tag.
