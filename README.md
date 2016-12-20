@@ -1,11 +1,10 @@
-# Islandora Twitter Cards
+# Islandora Social Metatags
 
-Add Twitter Cards meta tags to your site without hacking the theme.
-Adds Facebook meta tags too, but I haven't changed the module's name yet.
+Add social media sharing meta tags without hacking the theme. Enables Twitter Cards and Facebook previews, generating attractive images with descriptions when someone links to your objects.
 
 ## Introduction
 
-Islandora Twitter Cards adds Twitter-recognized meta tags to the HTML headers on Islandora objects based on MODS metadata. These tags enable Twitter to render Twitter Cards when Islandora content is tweeted.
+Islandora Social Metatags adds Twitter- and Facebook-recognized meta tags to the HTML headers on Islandora objects based on MODS metadata. This makes your objects more attractive when they're linked to on social media.
 
 **Before:**
 
