@@ -1,19 +1,19 @@
 <?php
 /**
  * @file
- * Main hooks for Islandora Badges.
+ * Main hooks for Social Metatags.
  */
 
 /**
  * Implements hook_menu().
  */
-function islandora_twitter_cards_menu() {
+function islandora_social_metatags_menu() {
   return array(
-    'admin/islandora/tools/twitter_cards' => array(
-      'title' => 'Islandora Twitter Cards',
-      'description' => 'Configure Twitter cards.',
+    'admin/islandora/tools/social_metatags' => array(
+      'title' => 'Islandora Social Metatags',
+      'description' => 'Configure Social Metatags.',
       'page callback' => 'drupal_get_form',
-      'page arguments' => array('islandora_twitter_cards_admin_form'),
+      'page arguments' => array('islandora_social_metatags_admin_form'),
       'access arguments' => array('administer site configuration'),
       'type' => MENU_NORMAL_ITEM,
       'file' => 'includes/admin.form.inc',
@@ -24,7 +24,7 @@ function islandora_twitter_cards_menu() {
 /*
 * Implements hook_islandora_view_object()
 */
-function islandora_twitter_cards_islandora_view_object() {
+function islandora_social_metatags_islandora_view_object() {
  // first grab the MODS metadata and set all variables
   $object = menu_get_object('islandora_object', 2);
   // Get Title.
@@ -36,7 +36,7 @@ function islandora_twitter_cards_islandora_view_object() {
   $xpath = new DOMXPath($doc);
   $xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3');
   $xpath_results = $xpath->query(
-    variable_get('islandora_twitter_cards_title_xpath', '/mods:mods/mods:titleInfo/mods:title')
+    variable_get('islandora_social_metatags_title_xpath', '/mods:mods/mods:titleInfo/mods:title')
   );
   if ($xpath_results->length == 0) {
     return;
@@ -52,16 +52,16 @@ function islandora_twitter_cards_islandora_view_object() {
   $xpath = new DOMXPath($doc);
   $xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3');
   $xpath_results = $xpath->query(
-    variable_get('islandora_twitter_cards_abstract_xpath', '/mods:mods/mods:abstract')
+    variable_get('islandora_social_metatags_abstract_xpath', '/mods:mods/mods:abstract')
   );
 
   // If there is no Abstract field, use a default message.
   if ($xpath_results->length == 0) {
-    $abstract = variable_get('islandora_twitter_cards_no_description', 'No description given.');
+    $abstract = variable_get('islandora_social_metatags_no_description', 'No description given.');
   }
   // In case of abstract field <abstract/>, use string length.
   elseif (strlen($xpath_results->item(0)->nodeValue) == 0) {
-        $abstract = variable_get('islandora_twitter_cards_no_description', 'No description given.');
+        $abstract = variable_get('islandora_social_metatags_no_description', 'No description given.');
   }
   else {
     $abstract = $xpath_results->item(0)->nodeValue;
@@ -71,19 +71,19 @@ function islandora_twitter_cards_islandora_view_object() {
 
   // Get Image path. TO DO: Error handling if no image exists.
   if (in_array('ir:citationCModel', $object->models)) {
-        $image_datastream = variable_get('islandora_twitter_cards_citation_datastream', 'PREVIEW');
+        $image_datastream = variable_get('islandora_social_metatags_citation_datastream', 'PREVIEW');
   }
   elseif (in_array('ir:thesisCModel', $object->models)) {
-    $image_datastream = variable_get('islandora_twitter_cards_thesis_datastream', 'PREVIEW');
+    $image_datastream = variable_get('islandora_social_metatags_thesis_datastream', 'PREVIEW');
   }
   elseif (in_array('islandora:sp_large_image_cmodel', $object->models)) {
-   $image_datastream = variable_get('islandora_twitter_cards_largeimage_datastream', 'JPG');
+   $image_datastream = variable_get('islandora_social_metatags_largeimage_datastream', 'JPG');
   }
   elseif (in_array('islandora:sp_basic_image', $object->models)) {
-   $image_datastream = variable_get('islandora_twitter_cards_basicimage_datastream', 'MEDIUM_SIZE');
+   $image_datastream = variable_get('islandora_social_metatags_basicimage_datastream', 'MEDIUM_SIZE');
   }
   elseif (in_array('islandora:sp_videoCModel', $object->models)) {
-   $image_datastream = variable_get('islandora_twitter_cards_video_datastream', 'TN');
+   $image_datastream = variable_get('islandora_social_metatags_video_datastream', 'TN');
   }
   else {
     $image_datastream = "TN";
@@ -106,11 +106,11 @@ function islandora_twitter_cards_islandora_view_object() {
  
 // If the datastream does not exist, use the default image path. 
   if (!$exists) {
-    $image = $base_url . variable_get('islandora_twitter_cards_noimage', '/sites/all/modules/islandora/images/folder.png');
+    $image = $base_url . variable_get('islandora_social_metatags_noimage', '/sites/all/modules/islandora/images/folder.png');
   }
 
   // Get Twitter user
-  $twitter_user = variable_get('islandora_twitter_cards_twitter_user');
+  $twitter_user = variable_get('islandora_social_metatags_twitter_user');
 
   // Turns out that Twitter no longer recognizes older card types, so this is the only option.
   $card_type = "summary_large_image";

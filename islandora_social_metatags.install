@@ -1,0 +1,24 @@
+<?php
+/**
+ * @file
+ * Installation hooks for Islandora Social Metatags.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function islandora_social_metatags_uninstall() {
+  $vars = array(
+    'islandora_social_metatags_title_xpath',
+    'islandora_social_metatags_abstract_xpath',
+    'islandora_social_metatags_twitter_user',
+    'islandora_social_metatags_no_description',
+    'islandora_social_metatags_largeimage_datastream',
+    'islandora_social_metatags_basicimage_datastream',
+    'islandora_social_metatags_video_datastream',
+    'islandora_social_metatags_citation_datastream',
+    'islandora_social_metatags_thesis_datastream',
+    'islandora_social_metatags_noimage'
+  );
+  array_walk($vars, 'variable_del');
+}

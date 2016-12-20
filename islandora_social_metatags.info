@@ -1,0 +1,6 @@
+name = Islandora Social Metatags
+version = 7.x-dev
+core = 7.x
+description = Adds social media preview-enabling meta tags to your objects.
+dependencies[] = islandora
+package = Islandora Tools
