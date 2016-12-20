@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Main hooks for Islandora Badges.
+ * Main hooks for Social Metatags.
  */
 
 /**
@@ -10,8 +10,8 @@
 function islandora_social_metatags_menu() {
   return array(
     'admin/islandora/tools/social_metatags' => array(
-      'title' => 'Islandora Twitter Cards',
-      'description' => 'Configure Twitter cards.',
+      'title' => 'Islandora Social Metatags',
+      'description' => 'Configure Social Metatags.',
       'page callback' => 'drupal_get_form',
       'page arguments' => array('islandora_social_metatags_admin_form'),
       'access arguments' => array('administer site configuration'),
