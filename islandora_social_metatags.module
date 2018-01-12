@@ -141,13 +141,6 @@ function islandora_social_metatags_islandora_view_object() {
         'content' => $title
       )
     ),
-    'Schema.org Title' => array(
-      '#tag' => 'meta',
-      '#attributes' => array(
-        'itemprop' => 'name',
-        'content' => $title
-      )
-    ),
     'Twitter image' => array(
       '#tag' => 'meta',
       '#attributes' => array(
@@ -159,13 +152,6 @@ function islandora_social_metatags_islandora_view_object() {
       '#tag' => 'meta',
       '#attributes' => array(
         'property' => 'og:image',
-        'content' => $image
-      )
-    ),
-    'Schema.org Image' => array(
-      '#tag' => 'meta',
-      '#attributes' => array(
-        'itemprop' => 'image',
         'content' => $image
       )
     ),
@@ -190,13 +176,6 @@ function islandora_social_metatags_islandora_view_object() {
         'content' => $abstract
       )
     ),
-    'Schema.org Description' => array(
-      '#tag' => 'meta',
-      '#attributes' => array(
-        'itemprop' => 'description',
-        'content' => $abstract
-      )
-    ),
     'Object type' => array(
       '#tag' => 'meta',
       '#attributes' => array(
@@ -217,11 +196,32 @@ function islandora_social_metatags_islandora_view_object() {
         'property' => 'og:site_name',
         'content' => $site_name
       )
+    ),
+    'Schema.org Title' => array(
+      '#tag' => 'meta',
+      '#attributes' => array(
+        'itemprop' => 'name',
+        'content' => $title
+      )
+    ),
+    'Schema.org Image' => array(
+      '#tag' => 'meta',
+      '#attributes' => array(
+        'itemprop' => 'image',
+        'content' => $image
+      )
+    ),
+    'Schema.org Description' => array(
+      '#tag' => 'meta',
+      '#attributes' => array(
+        'itemprop' => 'description',
+        'content' => $abstract
+      )
     )
   );
 
   foreach ($tags as $key => $val) {
     drupal_add_html_head($val, $key);
   }
-
 }
+
