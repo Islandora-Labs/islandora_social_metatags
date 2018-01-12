@@ -118,7 +118,7 @@ function islandora_social_metatags_islandora_view_object() {
 /*
 * Implements drupal_add_html_head() to inject the meta tags
 */
-
+  $site_name = variable_get('site_name', 'Islandora');
   $tags = array(
     'Twitter card' => array(
       '#tag' => 'meta',
@@ -126,186 +126,91 @@ function islandora_social_metatags_islandora_view_object() {
         'name' => 'twitter:card',
         'content' => $card_type
       )
-    )
-  );
-
-  foreach ($tags as $key => $val) {
-    drupal_add_html_head($val, $key);
-  }
-
-  $tags = array(
+    ),
     'Twitter Title' => array(
       '#tag' => 'meta',
       '#attributes' => array(
         'name' => 'twitter:title',
         'content' => $title
       )
-    )
-  );
-
-  foreach ($tags as $key => $val) {
-    drupal_add_html_head($val, $key);
-  }
-
-
-  $tags = array(
+    ),
     'Facebook Title' => array(
       '#tag' => 'meta',
       '#attributes' => array(
         'property' => 'og:title',
         'content' => $title
       )
-    )
-  );
-
-  foreach ($tags as $key => $val) {
-    drupal_add_html_head($val, $key);
-  }
-
-  $tags = array(
+    ),
     'Schema.org Title' => array(
       '#tag' => 'meta',
       '#attributes' => array(
         'itemprop' => 'name',
         'content' => $title
       )
-    )
-  );
-
-  foreach ($tags as $key => $val) {
-    drupal_add_html_head($val, $key);
-  }
-
-
-  $tags = array(
+    ),
     'Twitter image' => array(
       '#tag' => 'meta',
       '#attributes' => array(
         'name' => 'twitter:image',
         'content' => $image
       )
-    )
-  );
-
-  foreach ($tags as $key => $val) {
-    drupal_add_html_head($val, $key);
-  }
-
-  $tags = array(
+    ),
     'Facebook image' => array(
       '#tag' => 'meta',
       '#attributes' => array(
         'property' => 'og:image',
         'content' => $image
       )
-    )
-  );
-
-  foreach ($tags as $key => $val) {
-    drupal_add_html_head($val, $key);
-  }
-
-  $tags = array(
+    ),
     'Schema.org Image' => array(
       '#tag' => 'meta',
       '#attributes' => array(
         'itemprop' => 'image',
         'content' => $image
       )
-    )
-  );
-
-  foreach ($tags as $key => $val) {
-    drupal_add_html_head($val, $key);
-  }
-
-  $tags = array(
+    ),
     'Twitter site user' => array(
       '#tag' => 'meta',
       '#attributes' => array(
         'name' => 'twitter:site',
         'content' => $twitter_user
       )
-    )
-  );
-
-  foreach ($tags as $key => $val) {
-    drupal_add_html_head($val, $key);
-  }
-
-  $tags = array(
+    ),
     'Twitter description' => array(
       '#tag' => 'meta',
       '#attributes' => array(
         'name' => 'twitter:description',
         'content' => $abstract 
       )
-    )
-  );
-
-  foreach ($tags as $key => $val) {
-    drupal_add_html_head($val, $key);
-  }
-
-  $tags = array(
+    ),
     'Facebook description' => array(
       '#tag' => 'meta',
       '#attributes' => array(
         'property' => 'og:description',
         'content' => $abstract
       )
-    )
-  );
-
-  foreach ($tags as $key => $val) {
-    drupal_add_html_head($val, $key);
-  }
-
-  $tags = array(
+    ),
     'Schema.org Description' => array(
       '#tag' => 'meta',
       '#attributes' => array(
         'itemprop' => 'description',
         'content' => $abstract
       )
-    )
-  );
-
-  foreach ($tags as $key => $val) {
-    drupal_add_html_head($val, $key);
-  }
-
-  $tags = array(
-    'Facebook URL' => array(
-      '#tag' => 'meta',
-      '#attributes' => array(
-        'property' => 'og:url',
-        'content' => $og_url
-      )
-    )
-  );
-
-  foreach ($tags as $key => $val) {
-    drupal_add_html_head($val, $key);
-  }
-
-  $tags = array(
+    ),
     'Object type' => array(
       '#tag' => 'meta',
       '#attributes' => array(
         'property' => 'og:type',
         'content' => 'article'
       )
-    )
-  );
-
-  foreach ($tags as $key => $val) {
-    drupal_add_html_head($val, $key);
-  }
-
-  $site_name = variable_get('site_name', 'Islandora');
-
-  $tags = array(
+    ),
+    'Facebook URL' => array(
+      '#tag' => 'meta',
+      '#attributes' => array(
+        'property' => 'og:url',
+        'content' => $og_url
+      )
+    ),
     'Facebook site name' => array(
       '#tag' => 'meta',
       '#attributes' => array(
