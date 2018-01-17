@@ -246,27 +246,6 @@ function islandora_social_metatags_islandora_view_object() {
         'property' => 'og:site_name',
         'content' => $site_name
       )
-    ),
-    'Schema.org Title' => array(
-      '#tag' => 'meta',
-      '#attributes' => array(
-        'itemprop' => 'name',
-        'content' => $title
-      )
-    ),
-    'Schema.org Image' => array(
-      '#tag' => 'meta',
-      '#attributes' => array(
-        'itemprop' => 'image',
-        'content' => $image
-      )
-    ),
-    'Schema.org Description' => array(
-      '#tag' => 'meta',
-      '#attributes' => array(
-        'itemprop' => 'description',
-        'content' => $abstract
-      )
     )
   );
 
