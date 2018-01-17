@@ -69,24 +69,74 @@ function islandora_social_metatags_islandora_view_object() {
 
   $pid = $object->id;
 
-  // Get Image path. TO DO: Error handling if no image exists.
-  if (in_array('ir:citationCModel', $object->models)) {
-        $image_datastream = variable_get('islandora_social_metatags_citation_datastream', 'PREVIEW');
-  }
-  elseif (in_array('ir:thesisCModel', $object->models)) {
-    $image_datastream = variable_get('islandora_social_metatags_thesis_datastream', 'PREVIEW');
+  // Get Image path and item type. Item type required for schema.org tags.
+  if (in_array('ir:citationCModel', $object->models) || in_array('ir:thesisCModel', $object->models)) {
+    $image_datastream = variable_get('islandora_social_metatags_citation_datastream', 'PREVIEW');
+    $itemtype = "Article";
   }
   elseif (in_array('islandora:sp_large_image_cmodel', $object->models)) {
-   $image_datastream = variable_get('islandora_social_metatags_largeimage_datastream', 'JPG');
+    $image_datastream = variable_get('islandora_social_metatags_largeimage_datastream', 'JPG');
+    $itemtype = "ImageObject";
   }
   elseif (in_array('islandora:sp_basic_image', $object->models)) {
-   $image_datastream = variable_get('islandora_social_metatags_basicimage_datastream', 'MEDIUM_SIZE');
+    $image_datastream = variable_get('islandora_social_metatags_basicimage_datastream', 'MEDIUM_SIZE');
+    $itemtype = "ImageObject";
   }
   elseif (in_array('islandora:sp_videoCModel', $object->models)) {
-   $image_datastream = variable_get('islandora_social_metatags_video_datastream', 'TN');
+    $image_datastream = variable_get('islandora_social_metatags_video_datastream', 'TN');
+    $itemtype = "VideoObject";
+  }
+  elseif (in_array('islandora:personCModel', $object->models)) {
+    $image_datastream = "TN";
+    $itemtype = "Person";
+  }
+  elseif (in_array('islandora:sp_pdf', $object->models) || in_array('islandora:sp_document', $object->models)) {
+    $image_datastream = "PREVIEW";
+    $itemtype = "DigitalDocument";
+  }
+  elseif (in_array('islandora:collectionCModel', $object->models)) {
+    $image_datastream = "TN";
+    $itemtype = "CollectionPage";
+  }
+  elseif (in_array('islandora:sp-audioCModel', $object->models)) {
+    $image_datastream = "TN";
+    $itemtype = "AudioObject";
+  }
+  elseif (in_array('islandora:bookCModel', $object->models) || in_array ('islandora:pageCModel', $object->models)) {
+    $image_datastream = "TN";
+    $itemtype = "Book";
+  }
+  elseif (in_array('islandora:newspaperCModel', $object->models) || in_array('islandora:newspaperIssueCModel', $object->models)) {
+    $image_datastream = "TN";
+    $itemtype = "NewsArticle";
+  }
+  elseif (in_array('islandora:newspaperPageCModel', $object->models)) {
+    $image_datastream = "JPG";
+    $itemtype = "NewsArticle";
+  }
+  elseif (in_array('islandora:eventCModel', $object->models)) {
+    $image_datastream = "TN";
+    $itemtype = "Event";
+  }
+  elseif (in_array('islandora:placeCModel', $object->models)) {
+    $image_datastream = "TN";
+    $itemtype = "Place";
+  }
+  elseif (in_array('islandora:organizationCModel', $object->models)) {
+    $image_datastream = "TN";
+    $itemtype = "Organization";
+  }
+  elseif (in_array('islandora:sp_disk_image', $object->models)) {
+    $image_datastream = "TN";
+    $itemtype = "DataCatalog";
+  }
+  elseif (in_array('islandora:sp_web_archive', $object->models)) {
+    $image_datastream = "JPG";
+    $itemtype = "WebSite";
   }
   else {
     $image_datastream = "TN";
+    $itemtype = "Article";
   }
 
   global $base_url;
@@ -223,5 +273,12 @@ function islandora_social_metatags_islandora_view_object() {
   foreach ($tags as $key => $val) {
     drupal_add_html_head($val, $key);
   }
-}
 
+// Add the schema.org meta tags separately, as they require their own div.
+  print(
+    '<div itemscope itemtype = "http://schema.org/' . $itemtype . '">
+    <meta itemprop="name" content="' . $title . '">
+    <meta itemprop="description" content="' . $abstract . '">
+    <meta itemprop="image" content="' . $image . '"></div>'
+  );
+}
