@@ -21,15 +21,12 @@ function islandora_social_metatags_menu() {
   );
 }
 
-/**
+/*
 * Implements hook_islandora_view_object()
 */
 function islandora_social_metatags_islandora_view_object() {
  // first grab the MODS metadata and set all variables
   $object = menu_get_object('islandora_object', 2);
-  global $base_url;
-  $images = array();
-
   // Get Title.
   if (!isset($object['MODS'])) {
       return;
@@ -49,24 +46,6 @@ function islandora_social_metatags_islandora_view_object() {
     return;
   }
 
-  // If member of a compound object, prefix the object title with that of the parent.
-  $compound_parent = $object->relationships->get('info:fedora/fedora-system:def/relations-external#', 'isConstituentOf');
-  if(!empty($compound_parent && !empty($compound_parent[0]['object']['value']))) {
-    $compound_parent = islandora_object_load($compound_parent[0]['object']['value']);
-    if(!empty($compound_parent)) {
-      $doc = new DOMDocument();
-      $doc->loadXML($compound_parent['MODS']->content);
-      $xpath = new DOMXPath($doc);
-      $xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3');
-      $xpath_results = $xpath->query(
-        variable_get('islandora_social_metatags_title_xpath', '/mods:mods/mods:titleInfo/mods:title')
-      );
-      if ($xpath_results->length > 0) {
-        $title = t('@parent: @child', array('@parent' => $xpath_results->item(0)->nodeValue, '@child' => $title));
-      }
-    }
-  }
-
   // Get Abstract
   $doc = new DOMDocument();
   $doc->loadXML($object['MODS']->content);
@@ -78,25 +57,7 @@ function islandora_social_metatags_islandora_view_object() {
 
   // If there is no Abstract field, use a default message.
   if ($xpath_results->length == 0) {
-    // Look to see if a parent exists, and if it has a description. If so, use it.
-    if (!empty($compound_parent)) {
-      $doc = new DOMDocument();
-      $doc->loadXML($compound_parent['MODS']->content);
-      $xpath = new DOMXPath($doc);
-      $xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3');
-      $xpath_results = $xpath->query(
-        variable_get('islandora_social_metatags_abstract_xpath', '/mods:mods/mods:abstract')
-      );
-      if (strlen($xpath_results->item(0)->nodeValue) == 0) {
-        $abstract = variable_get('islandora_social_metatags_no_description', 'No description given.');
-      }
-      else {
-        $abstract = $xpath_results->item(0)->nodeValue;
-      }
-    }
-    else {
-      $abstract = variable_get('islandora_social_metatags_no_description', 'No description given.');
-    }
+    $abstract = variable_get('islandora_social_metatags_no_description', 'No description given.');
   }
   // In case of abstract field <abstract/>, use string length.
   elseif (strlen($xpath_results->item(0)->nodeValue) == 0) {
@@ -108,27 +69,44 @@ function islandora_social_metatags_islandora_view_object() {
 
   $pid = $object->id;
 
-  // Compound objects have multiple images.
-  if(in_array('islandora:compoundCModel', $object->models)) {
-    $parts = islandora_compound_object_get_parts($object->id);
-    foreach ($parts as $part) {
-      $child_object = islandora_object_load($part);
-      $child_image_datastream = _ism_get_image_datastream($child_object);
-      $images[] = $base_url . "/islandora/object/" . $child_object->id . "/datastream/" . $child_image_datastream . "/view";
-    }
+  // Get Image path. TO DO: Error handling if no image exists.
+  if (in_array('ir:citationCModel', $object->models)) {
+        $image_datastream = variable_get('islandora_social_metatags_citation_datastream', 'PREVIEW');
+  }
+  elseif (in_array('ir:thesisCModel', $object->models)) {
+    $image_datastream = variable_get('islandora_social_metatags_thesis_datastream', 'PREVIEW');
+  }
+  elseif (in_array('islandora:sp_large_image_cmodel', $object->models)) {
+   $image_datastream = variable_get('islandora_social_metatags_largeimage_datastream', 'JPG');
+  }
+  elseif (in_array('islandora:sp_basic_image', $object->models)) {
+   $image_datastream = variable_get('islandora_social_metatags_basicimage_datastream', 'MEDIUM_SIZE');
+  }
+  elseif (in_array('islandora:sp_videoCModel', $object->models)) {
+   $image_datastream = variable_get('islandora_social_metatags_video_datastream', 'TN');
   }
   else {
-    // Get Image path. TO DO: Error handling if no image exists.
-    $image_datastream = _ism_get_image_datastream($object);
-    $images[] = $base_url . "/islandora/object/" . $pid . "/datastream/" . $image_datastream . "/view";
+    $image_datastream = "TN";
   }
 
+  global $base_url;
+  $image = $base_url . "/islandora/object/" . $pid . "/datastream/" . $image_datastream . "/view";
   $og_url = $base_url . "/islandora/object/" . $pid;
+// Check whether the image datastream actually exists..
 
+  $file = $image;
+  $file_headers = @get_headers($file);
 
+  if (!$file_headers || strpos($file_headers[0], '404')) {
+    $exists = FALSE;
+  }
+  else {
+    $exists = TRUE;
+  }
+ 
 // If the datastream does not exist, use the default image path. 
-  if (empty($images)) {
-    $images[] = $base_url . variable_get('islandora_social_metatags_noimage', '/sites/all/modules/islandora/images/folder.png');
+  if (!$exists) {
+    $image = $base_url . variable_get('islandora_social_metatags_noimage', '/sites/all/modules/islandora/images/folder.png');
   }
 
   // Get Twitter user
@@ -141,7 +119,6 @@ function islandora_social_metatags_islandora_view_object() {
 * Implements drupal_add_html_head() to inject the meta tags
 */
 
-  // Twitter card
   $tags = array(
     'Twitter card' => array(
       '#tag' => 'meta',
@@ -156,7 +133,6 @@ function islandora_social_metatags_islandora_view_object() {
     drupal_add_html_head($val, $key);
   }
 
-  // Title tags
   $tags = array(
     'Twitter Title' => array(
       '#tag' => 'meta',
@@ -186,30 +162,36 @@ function islandora_social_metatags_islandora_view_object() {
     drupal_add_html_head($val, $key);
   }
 
-  // Image tags (maximum of six allowed).
-  foreach(array_slice($images, 0, 6) as $i => $image) {
-    $image_tags = array(
-      'Twitter image '. $i => array(
-        '#tag' => 'meta',
-        '#attributes' => array(
-          'name' => 'twitter:image',
-          'content' => $image
-        )
-      ),
-      'Facebook image ' . $i  => array(
-        '#tag' => 'meta',
-        '#attributes' => array(
-          'property' => 'og:image',
-          'content' => $image
-        )
+
+  $tags = array(
+    'Twitter image' => array(
+      '#tag' => 'meta',
+      '#attributes' => array(
+        'name' => 'twitter:image',
+        'content' => $image
       )
-    );
-    foreach ($image_tags as $key => $val) {
-      drupal_add_html_head($val, $key);
-    }
+    )
+  );
+
+  foreach ($tags as $key => $val) {
+    drupal_add_html_head($val, $key);
   }
 
-  // Twitter user.
+  $tags = array(
+    'Facebook image' => array(
+      '#tag' => 'meta',
+      '#attributes' => array(
+        'property' => 'og:image',
+        'content' => $image
+      )
+    )
+  );
+
+  foreach ($tags as $key => $val) {
+    drupal_add_html_head($val, $key);
+  }
+
+
   $tags = array(
     'Twitter site user' => array(
       '#tag' => 'meta',
@@ -224,7 +206,6 @@ function islandora_social_metatags_islandora_view_object() {
     drupal_add_html_head($val, $key);
   }
 
-  // Description.
   $tags = array(
     'Twitter description' => array(
       '#tag' => 'meta',
@@ -297,36 +278,4 @@ function islandora_social_metatags_islandora_view_object() {
     drupal_add_html_head($val, $key);
   }
 
-}
-
-
-/**
- * Get the preferred datastream to use for preview image.
- *
- * @param IslandoraFedoraObject $object
- * @return null|string
- *   If none found, return an empty string. Otherwise, return the DSID.
- */
-function _ism_get_image_datastream(IslandoraFedoraObject $object) {
-  // Get Image path. TO DO: Error handling if no image exists.
-  $image_datastream = '';
-  if (in_array('ir:citationCModel', $object->models)) {
-    $image_datastream = variable_get('islandora_social_metatags_citation_datastream', 'PREVIEW');
-  }
-  elseif (in_array('ir:thesisCModel', $object->models)) {
-    $image_datastream = variable_get('islandora_social_metatags_thesis_datastream', 'PREVIEW');
-  }
-  elseif (in_array('islandora:sp_large_image_cmodel', $object->models)) {
-    $image_datastream = variable_get('islandora_social_metatags_largeimage_datastream', 'JPG');
-  }
-  elseif (in_array('islandora:sp_basic_image', $object->models)) {
-    $image_datastream = variable_get('islandora_social_metatags_basicimage_datastream', 'MEDIUM_SIZE');
-  }
-  elseif (in_array('islandora:sp_videoCModel', $object->models)) {
-    $image_datastream = variable_get('islandora_social_metatags_video_datastream', 'TN');
-  }
-  if((empty($image_datastream) || empty($object[$image_datastream])) && !empty($object['TN'])) {
-    $image_datastream = "TN";
-  }
-  return $image_datastream;
 }
