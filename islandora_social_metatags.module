@@ -25,7 +25,6 @@ function islandora_social_metatags_menu() {
  * Implements hook_islandora_view_object()
  */
 function islandora_social_metatags_islandora_view_object() {
-  // first grab the MODS metadata and set all variables
 
   $has_run = &drupal_static(__FUNCTION__);
   if (!isset($has_run)) {
@@ -35,59 +34,90 @@ function islandora_social_metatags_islandora_view_object() {
     if (!isset($object['MODS'])) {
       return;
     }
-    $titles = array();
-    // Get a title for this object
-    $doc = new DOMDocument();
-    $doc->loadXML($object['MODS']->content);
-    $xpath = new DOMXPath($doc);
-    $xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3');
-    $xpath_results = $xpath->query(
-      variable_get('islandora_social_metatags_title_xpath', '/mods:mods/mods:titleInfo/mods:title')
-    );
-    if ($xpath_results->length > 0) {
-      $titles[] = $xpath_results->item(0)->nodeValue;
-    }
 
-    // If member of a compound object, prefix this object's title with that of the parent.
+    //// Set up for compound object.
+    $objects = array('parent' => NULL, 'child' => NULL);
+    $titles = array();
     $compound_parent = $object->relationships->get('info:fedora/fedora-system:def/relations-external#', 'isConstituentOf');
     if (!empty($compound_parent && !empty($compound_parent[0]['object']['value']))) {
-      $compound_parent = islandora_object_load($compound_parent[0]['object']['value']);
-      if (!empty($compound_parent)) {
+      $objects['parent'] = islandora_object_load($compound_parent[0]['object']['value']);
+      $objects['child'] = $object;
+    }
+    elseif (in_array('islandora:compoundCModel', $object->models)) {
+      $children = islandora_compound_object_get_parts($object);
+      if(!empty($children[0])) {
+        $objects['parent'] = $object;
+        $objects['child'] = islandora_object_load($children[0]);
+      }
+    }
+    else {
+      // Not compound, handle normally.
+      $objects = array($object);
+    }
+
+    $abstract_objects = $title_objects = $objects;
+
+    //// Get Title.
+    // If none available, exit.
+    if(count($title_objects > 1)) {
+      $title_pref = variable_get('islandora_social_metatags_compound_title', 'concatenate');
+      // Remove parent or child as appropriate.
+      switch($title_pref) {
+        case 'parent':
+          unset($title_objects['child']);
+          break;
+        case 'child':
+          unset($title_objects['parent']);
+          break;
+      }
+    }
+    foreach ($title_objects as $key => $title_object) {
+      if(isset($object['MODS'])) {
         $doc = new DOMDocument();
-        $doc->loadXML($compound_parent['MODS']->content);
+        $doc->loadXML($title_object['MODS']->content);
         $xpath = new DOMXPath($doc);
         $xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3');
         $xpath_results = $xpath->query(
           variable_get('islandora_social_metatags_title_xpath', '/mods:mods/mods:titleInfo/mods:title')
         );
         if ($xpath_results->length > 0) {
-          array_unshift($titles, $xpath_results->item(0)->nodeValue);
+          $titles[] = $xpath_results->item(0)->nodeValue;
         }
       }
     }
     array_filter($titles);
-
     if (empty($titles)) {
+      // No title, no metatags.
       return;
     }
     else {
-      $title = htmlspecialchars(implode(": ", $titles));
+      $title = implode(variable_get('islandora_social_metatags_compound_title_delimiter', ': '), $titles);
     }
 
-    // Get Abstract
-    $abstract = _ism_object_abstract($object);
-    if (empty($abstract) && !empty($compound_parent)) {
-      // Attempt to get abstract from the parent.
-      $abstract = _ism_object_abstract($compound_parent);
+    //// Get Abstract.
+    if (count($abstract_objects) > 1) {
+      $abstract_pref = variable_get('islandora_social_metatags_compound_abstract', 'concatenate');
+      // Remove parent or child if appropriate.
+      switch($abstract_pref) {
+        case 'parent':
+          unset($abstract_objects['child']);
+          break;
+        case 'child':
+          unset($abstract_objects['parent']);
+          break;
+      }
     }
+    $abstract = _ism_object_abstract($abstract_objects);
     // Provide default abstract if none found.
     if (empty($abstract)) {
       $abstract = variable_get('islandora_social_metatags_no_description', 'No description given.');
     }
-    $abstract = htmlspecialchars($abstract);
 
+    //// Get Image.
     // For the purpose of generating image tags, if this object is a compound, then
     // switch to using the nearest first child that is not a compound object.
+    // (This changes the $object variable, so must run after the title and abstract
+    // logic has run.)
     $object = _ism_get_image_object($object);
 
     $pid = $object->id;
@@ -276,6 +306,7 @@ function islandora_social_metatags_islandora_view_object() {
       drupal_add_html_head($val, $key);
     }
 
+    //// Add schema.org metadata.
     // Add the schema.org meta tags separately, as they require their own div.
     $itemscope = '<div itemscope itemtype = "http://schema.org/' . $itemtype . '">
     <meta itemprop="name" content="' . htmlspecialchars($title) . '">
@@ -286,6 +317,7 @@ function islandora_social_metatags_islandora_view_object() {
     $script = '//--><!]]></script>' . $itemscope . '<script type="text/javascript"><!--//--><![CDATA[//><!--';
     drupal_add_js($script, 'inline', 'footer');
 
+    // Don't do this again.
     $has_run = TRUE;
   }
 }
@@ -293,26 +325,31 @@ function islandora_social_metatags_islandora_view_object() {
 /**
  * Attempt to get the abstract for an object.
  *
- * @param AbstractFedoraObject $object
+ * Takes an array of objects. The first one with a usable abstract will be used.
+ * If none are usable, return empty string.
+ *
+ * @param array $objects
  *
  * @return string
  *   The abstract, or empty string if not found.
  */
-function _ism_object_abstract(AbstractFedoraObject $object) {
-  $abstract = '';
-  if (!empty($object['MODS']->content)) {
-    $doc = new DOMDocument();
-    $doc->loadXML($object['MODS']->content);
-    $xpath = new DOMXPath($doc);
-    $xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3');
-    $xpath_results = $xpath->query(
-      variable_get('islandora_social_metatags_abstract_xpath', '/mods:mods/mods:abstract')
-    );
-    if (!empty($xpath_results->item(0)->nodeValue) && strlen($xpath_results->item(0)->nodeValue) > 0) {
-      $abstract = $xpath_results->item(0)->nodeValue;
+function _ism_object_abstract($objects) {
+  $abstracts = array();
+  foreach($objects as $object) {
+    if (!empty($object['MODS'])) {
+      $doc = new DOMDocument();
+      $doc->loadXML($object['MODS']->content);
+      $xpath = new DOMXPath($doc);
+      $xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3');
+      $xpath_results = $xpath->query(
+        variable_get('islandora_social_metatags_abstract_xpath', '/mods:mods/mods:abstract')
+      );
+      if (!empty($xpath_results->item(0)->nodeValue) && strlen($xpath_results->item(0)->nodeValue) > 0) {
+        $abstracts[] = $xpath_results->item(0)->nodeValue;
+      }
     }
   }
-  return $abstract;
+  return implode(" :: ", $abstracts);
 }
 
 /**

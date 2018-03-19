@@ -10,14 +10,14 @@ function islandora_social_metatags_admin_form($form, $form_settings) {
     '#description' => t('MODS XPath for retrieving the title.'),
     '#default_value' => variable_get('islandora_social_metatags_title_xpath', '/mods:mods/mods:titleInfo/mods:title'),
   );
-  
+
   $form['islandora_social_metatags_abstract_xpath'] = array(
     '#type' => 'textfield',
     '#title' => t('Abstract XPath'),
     '#description' => t('MODS XPath for the Description field. Defaults to mods:abstract.'),
     '#default_value' => variable_get('islandora_social_metatags_abstract_xpath', '/mods:mods/mods:abstract'),
   );
-  
+
   $form['islandora_social_metatags_twitter_user'] = array(
     '#type' => 'textfield',
     '#title' => t('Site Twitter user'),
@@ -66,5 +66,40 @@ function islandora_social_metatags_admin_form($form, $form_settings) {
     '#description' => t('If the above Image datastreams do not exist for a given object, use a basic default. Use a relative path.'),
     '#default_value' => variable_get('islandora_social_metatags_noimage', '/sites/all/modules/islandora/images/folder.png'),
   );
+  $form['islandora_social_metatags_compound_title'] = array(
+    '#type' => 'select',
+    '#title' => t('Compound Object Title Preference'),
+    '#description' => t('Do you prefer the child title, parent title, or both, concatenated?.'),
+    '#options' => array(
+      'child' => t('Child'),
+      'parent' => t('Parent'),
+      'concatenate' => t('Concatenated'),
+    ),
+    '#default_value' => variable_get('islandora_social_metatags_compound_title', 'concatenate'),
+  );
+  $form['islandora_social_metatags_compound_title_delimiter'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Compound Object Title Concatenation Delimiter'),
+    '#description' => t('If displaying the parent and child title, what characters should delimit them? <em>(No quotes, html tags or special characters permitted.)</em>'),
+    '#default_value' => variable_get('islandora_social_metatags_compound_title_delimiter', ': '),
+  );
+  $form['islandora_social_metatags_compound_abstract'] = array(
+    '#type' => 'select',
+    '#title' => t('Compound Object Abstract Preference'),
+    '#description' => t('Do you prefer the child\'s abstract, parent\'s abstract, or both?.'),
+    '#options' => array(
+      'child' => t('Child'),
+      'parent' => t('Parent'),
+      'concatenate' => t('Both'),
+    ),
+    '#default_value' => variable_get('islandora_social_metatags_compound_abstract', 'concatenate'),
+  );
+  $form['islandora_social_metatags_compound_abstract_delimiter'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Compound Object Title Concatenation Delimiter'),
+    '#description' => t('If displaying the parent and child abstract, what characters should delimit them? <em>(No quotes, html tags or special characters permitted.)</em>'),
+    '#default_value' => variable_get('islandora_social_metatags_compound_abstract_delimiter', ' :: '),
+  );
+
   return system_settings_form($form);
 }
