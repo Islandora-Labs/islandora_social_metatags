@@ -69,7 +69,7 @@ function islandora_social_metatags_admin_form($form, $form_settings) {
   $form['islandora_social_metatags_compound_title'] = array(
     '#type' => 'select',
     '#title' => t('Compound Object Title Preference'),
-    '#description' => t('Do you prefer the child title, parent title, or both, concatenated?.'),
+    '#description' => t('On all child objects, use either the Parent\'s title, the Child\'s title, or concatenate both. If choosing Child, the first child object\'s title will be used when viewing the parent object.'),
     '#options' => array(
       'child' => t('Child'),
       'parent' => t('Parent'),
@@ -86,7 +86,7 @@ function islandora_social_metatags_admin_form($form, $form_settings) {
   $form['islandora_social_metatags_compound_abstract'] = array(
     '#type' => 'select',
     '#title' => t('Compound Object Abstract Preference'),
-    '#description' => t('Do you prefer the child\'s abstract, parent\'s abstract, or both?.'),
+    '#description' => t('On all child objects, use either the Parent\'s abstract, the Child\'s abstract, or concatenate both. If choosing Child, the first child object\'s abstract will be used when viewing the parent object.'),
     '#options' => array(
       'child' => t('Child'),
       'parent' => t('Parent'),
