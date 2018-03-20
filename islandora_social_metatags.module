@@ -21,243 +21,363 @@ function islandora_social_metatags_menu() {
   );
 }
 
-/*
-* Implements hook_islandora_view_object()
-*/
+/**
+ * Implements hook_islandora_view_object()
+ */
 function islandora_social_metatags_islandora_view_object() {
- // first grab the MODS metadata and set all variables
-  $object = menu_get_object('islandora_object', 2);
-  // Get Title.
-  if (!isset($object['MODS'])) {
+
+  $has_run = &drupal_static(__FUNCTION__);
+  if (!isset($has_run)) {
+
+    $object = menu_get_object('islandora_object', 2);
+    // Get Title(s) -- if part of a compound object, concatenate the parent's title with that of the child.
+    if (!isset($object['MODS'])) {
       return;
-     }
-  $doc = new DOMDocument();
-  $doc->loadXML($object['MODS']->content);
-  $xpath = new DOMXPath($doc);
-  $xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3');
-  $xpath_results = $xpath->query(
-    variable_get('islandora_social_metatags_title_xpath', '/mods:mods/mods:titleInfo/mods:title')
-  );
-  if ($xpath_results->length == 0) {
-    return;
-  }
-  $title = $xpath_results->item(0)->nodeValue;
-  if (!$title) {
-    return;
-  }
+    }
 
-  // Get Abstract
-  $doc = new DOMDocument();
-  $doc->loadXML($object['MODS']->content);
-  $xpath = new DOMXPath($doc);
-  $xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3');
-  $xpath_results = $xpath->query(
-    variable_get('islandora_social_metatags_abstract_xpath', '/mods:mods/mods:abstract')
-  );
+    //// Set up for compound object.
+    $objects = array('parent' => NULL, 'child' => NULL);
+    $titles = array();
+    $compound_parent = $object->relationships->get('info:fedora/fedora-system:def/relations-external#', 'isConstituentOf');
+    if (!empty($compound_parent && !empty($compound_parent[0]['object']['value']))) {
+      $objects['parent'] = islandora_object_load($compound_parent[0]['object']['value']);
+      $objects['child'] = $object;
+    }
+    elseif (in_array('islandora:compoundCModel', $object->models)) {
+      $children = islandora_compound_object_get_parts($object);
+      if(!empty($children[0])) {
+        $objects['parent'] = $object;
+        $objects['child'] = islandora_object_load($children[0]);
+      }
+    }
+    else {
+      // Not compound, handle normally.
+      $objects = array($object);
+    }
 
-  // If there is no Abstract field, use a default message.
-  if ($xpath_results->length == 0) {
-    $abstract = variable_get('islandora_social_metatags_no_description', 'No description given.');
-  }
-  // In case of abstract field <abstract/>, use string length.
-  elseif (strlen($xpath_results->item(0)->nodeValue) == 0) {
-        $abstract = variable_get('islandora_social_metatags_no_description', 'No description given.');
-  }
-  else {
-    $abstract = $xpath_results->item(0)->nodeValue;
-  }
+    $abstract_objects = $title_objects = $objects;
 
-  $pid = $object->id;
+    //// Get Title.
+    // If none available, exit.
+    if(count($title_objects > 1)) {
+      $title_pref = variable_get('islandora_social_metatags_compound_title', 'concatenate');
+      // Remove parent or child as appropriate.
+      switch($title_pref) {
+        case 'parent':
+          unset($title_objects['child']);
+          break;
+        case 'child':
+          unset($title_objects['parent']);
+          break;
+      }
+    }
+    foreach ($title_objects as $key => $title_object) {
+      if(isset($object['MODS'])) {
+        $doc = new DOMDocument();
+        $doc->loadXML($title_object['MODS']->content);
+        $xpath = new DOMXPath($doc);
+        $xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3');
+        $xpath_results = $xpath->query(
+          variable_get('islandora_social_metatags_title_xpath', '/mods:mods/mods:titleInfo/mods:title')
+        );
+        if ($xpath_results->length > 0) {
+          $titles[] = $xpath_results->item(0)->nodeValue;
+        }
+      }
+    }
+    array_filter($titles);
+    if (empty($titles)) {
+      // No title, no metatags.
+      return;
+    }
+    else {
+      $title = implode(variable_get('islandora_social_metatags_compound_title_delimiter', ': '), $titles);
+    }
 
-  // Get Image path and item type. Item type required for schema.org tags.
-  if (in_array('ir:citationCModel', $object->models) || in_array('ir:thesisCModel', $object->models)) {
-    $image_datastream = variable_get('islandora_social_metatags_citation_datastream', 'PREVIEW');
-    $itemtype = "Article";
-  }
-  elseif (in_array('islandora:sp_large_image_cmodel', $object->models)) {
-    $image_datastream = variable_get('islandora_social_metatags_largeimage_datastream', 'JPG');
-    $itemtype = "ImageObject";
-  }
-  elseif (in_array('islandora:sp_basic_image', $object->models)) {
-    $image_datastream = variable_get('islandora_social_metatags_basicimage_datastream', 'MEDIUM_SIZE');
-    $itemtype = "ImageObject";
-  }
-  elseif (in_array('islandora:sp_videoCModel', $object->models)) {
-    $image_datastream = variable_get('islandora_social_metatags_video_datastream', 'TN');
-    $itemtype = "VideoObject";
-  }
-  elseif (in_array('islandora:personCModel', $object->models)) {
-    $image_datastream = "TN";
-    $itemtype = "Person";
-  }
-  elseif (in_array('islandora:sp_pdf', $object->models) || in_array('islandora:sp_document', $object->models)) {
-    $image_datastream = "PREVIEW";
-    $itemtype = "DigitalDocument";
-  }
-  elseif (in_array('islandora:collectionCModel', $object->models)) {
-    $image_datastream = "TN";
-    $itemtype = "CollectionPage";
-  }
-  elseif (in_array('islandora:sp-audioCModel', $object->models)) {
-    $image_datastream = "TN";
-    $itemtype = "AudioObject";
-  }
-  elseif (in_array('islandora:bookCModel', $object->models) || in_array ('islandora:pageCModel', $object->models)) {
-    $image_datastream = "TN";
-    $itemtype = "Book";
-  }
-  elseif (in_array('islandora:newspaperCModel', $object->models) || in_array('islandora:newspaperIssueCModel', $object->models)) {
-    $image_datastream = "TN";
-    $itemtype = "NewsArticle";
-  }
-  elseif (in_array('islandora:newspaperPageCModel', $object->models)) {
-    $image_datastream = "JPG";
-    $itemtype = "NewsArticle";
-  }
-  elseif (in_array('islandora:eventCModel', $object->models)) {
-    $image_datastream = "TN";
-    $itemtype = "Event";
-  }
-  elseif (in_array('islandora:placeCModel', $object->models)) {
-    $image_datastream = "TN";
-    $itemtype = "Place";
-  }
-  elseif (in_array('islandora:organizationCModel', $object->models)) {
-    $image_datastream = "TN";
-    $itemtype = "Organization";
-  }
-  elseif (in_array('islandora:sp_disk_image', $object->models)) {
-    $image_datastream = "TN";
-    $itemtype = "DataCatalog";
-  }
-  elseif (in_array('islandora:sp_web_archive', $object->models)) {
-    $image_datastream = "JPG";
-    $itemtype = "WebSite";
-  }
-  else {
-    $image_datastream = "TN";
-    $itemtype = "Article";
-  }
+    //// Get Abstract.
+    if (count($abstract_objects) > 1) {
+      $abstract_pref = variable_get('islandora_social_metatags_compound_abstract', 'concatenate');
+      // Remove parent or child if appropriate.
+      switch($abstract_pref) {
+        case 'parent':
+          unset($abstract_objects['child']);
+          break;
+        case 'child':
+          unset($abstract_objects['parent']);
+          break;
+      }
+    }
+    $abstract = _ism_object_abstract($abstract_objects);
+    // Provide default abstract if none found.
+    if (empty($abstract)) {
+      $abstract = variable_get('islandora_social_metatags_no_description', 'No description given.');
+    }
 
-  global $base_url;
-  $image = $base_url . "/islandora/object/" . $pid . "/datastream/" . $image_datastream . "/view";
-  $og_url = $base_url . "/islandora/object/" . $pid;
-// Check whether the image datastream actually exists..
+    //// Get Image.
+    // For the purpose of generating image tags, if this object is a compound, then
+    // switch to using the nearest first child that is not a compound object.
+    // (This changes the $object variable, so must run after the title and abstract
+    // logic has run.)
+    $object = _ism_get_image_object($object);
 
-  $file = $image;
-  $file_headers = @get_headers($file);
+    $pid = $object->id;
 
-  if (!$file_headers || strpos($file_headers[0], '404')) {
-    $exists = FALSE;
+    // Get Image path and item type. Item type required for schema.org tags.
+    if (in_array('ir:citationCModel', $object->models) || in_array('ir:thesisCModel', $object->models)) {
+      $image_datastream = variable_get('islandora_social_metatags_citation_datastream', 'PREVIEW');
+      $itemtype = "Article";
+    }
+    elseif (in_array('islandora:sp_large_image_cmodel', $object->models)) {
+      $image_datastream = variable_get('islandora_social_metatags_largeimage_datastream', 'JPG');
+      $itemtype = "ImageObject";
+    }
+    elseif (in_array('islandora:sp_basic_image', $object->models)) {
+      $image_datastream = variable_get('islandora_social_metatags_basicimage_datastream', 'MEDIUM_SIZE');
+      $itemtype = "ImageObject";
+    }
+    elseif (in_array('islandora:sp_videoCModel', $object->models)) {
+      $image_datastream = variable_get('islandora_social_metatags_video_datastream', 'TN');
+      $itemtype = "VideoObject";
+    }
+    elseif (in_array('islandora:personCModel', $object->models)) {
+      $image_datastream = "TN";
+      $itemtype = "Person";
+    }
+    elseif (in_array('islandora:sp_pdf', $object->models) || in_array('islandora:sp_document', $object->models)) {
+      $image_datastream = "PREVIEW";
+      $itemtype = "DigitalDocument";
+    }
+    elseif (in_array('islandora:collectionCModel', $object->models)) {
+      $image_datastream = "TN";
+      $itemtype = "CollectionPage";
+    }
+    elseif (in_array('islandora:sp-audioCModel', $object->models)) {
+      $image_datastream = "TN";
+      $itemtype = "AudioObject";
+    }
+    elseif (in_array('islandora:bookCModel', $object->models) || in_array('islandora:pageCModel', $object->models)) {
+      $image_datastream = "TN";
+      $itemtype = "Book";
+    }
+    elseif (in_array('islandora:newspaperCModel', $object->models) || in_array('islandora:newspaperIssueCModel', $object->models)) {
+      $image_datastream = "TN";
+      $itemtype = "NewsArticle";
+    }
+    elseif (in_array('islandora:newspaperPageCModel', $object->models)) {
+      $image_datastream = "JPG";
+      $itemtype = "NewsArticle";
+    }
+    elseif (in_array('islandora:eventCModel', $object->models)) {
+      $image_datastream = "TN";
+      $itemtype = "Event";
+    }
+    elseif (in_array('islandora:placeCModel', $object->models)) {
+      $image_datastream = "TN";
+      $itemtype = "Place";
+    }
+    elseif (in_array('islandora:organizationCModel', $object->models)) {
+      $image_datastream = "TN";
+      $itemtype = "Organization";
+    }
+    elseif (in_array('islandora:sp_disk_image', $object->models)) {
+      $image_datastream = "TN";
+      $itemtype = "DataCatalog";
+    }
+    elseif (in_array('islandora:sp_web_archive', $object->models)) {
+      $image_datastream = "JPG";
+      $itemtype = "WebSite";
+    }
+    else {
+      $image_datastream = "TN";
+      $itemtype = "Article";
+    }
+
+    global $base_url;
+    $image = $base_url . "/islandora/object/" . $pid . "/datastream/" . $image_datastream . "/view";
+    $og_url = $base_url . "/islandora/object/" . $pid;
+    // Check whether the image datastream actually exists..
+
+    $file = $image;
+    $file_headers = @get_headers($file);
+
+    if (!$file_headers || strpos($file_headers[0], '404')) {
+      $exists = FALSE;
+    }
+    else {
+      $exists = TRUE;
+    }
+
+    // If the datastream does not exist, use the default image path.
+    if (!$exists) {
+      $image = $base_url . variable_get('islandora_social_metatags_noimage', '/sites/all/modules/islandora/images/folder.png');
+    }
+
+    // Get Twitter user
+    $twitter_user = variable_get('islandora_social_metatags_twitter_user');
+
+    // Turns out that Twitter no longer recognizes older card types, so this is the only option.
+    $card_type = "summary_large_image";
+
+    /*
+    * Implements drupal_add_html_head() to inject the meta tags
+    */
+    $site_name = variable_get('site_name', 'Islandora');
+    $tags = [
+      'Twitter card' => [
+        '#tag' => 'meta',
+        '#attributes' => [
+          'name' => 'twitter:card',
+          'content' => $card_type,
+        ],
+      ],
+      'Twitter Title' => [
+        '#tag' => 'meta',
+        '#attributes' => [
+          'name' => 'twitter:title',
+          'content' => $title,
+        ],
+      ],
+      'Facebook Title' => [
+        '#tag' => 'meta',
+        '#attributes' => [
+          'property' => 'og:title',
+          'content' => $title,
+        ],
+      ],
+      'Twitter image' => [
+        '#tag' => 'meta',
+        '#attributes' => [
+          'name' => 'twitter:image',
+          'content' => $image,
+        ],
+      ],
+      'Facebook image' => [
+        '#tag' => 'meta',
+        '#attributes' => [
+          'property' => 'og:image',
+          'content' => $image,
+        ],
+      ],
+      'Twitter site user' => [
+        '#tag' => 'meta',
+        '#attributes' => [
+          'name' => 'twitter:site',
+          'content' => $twitter_user,
+        ],
+      ],
+      'Twitter description' => [
+        '#tag' => 'meta',
+        '#attributes' => [
+          'name' => 'twitter:description',
+          'content' => $abstract,
+        ],
+      ],
+      'Facebook description' => [
+        '#tag' => 'meta',
+        '#attributes' => [
+          'property' => 'og:description',
+          'content' => $abstract,
+        ],
+      ],
+      'Object type' => [
+        '#tag' => 'meta',
+        '#attributes' => [
+          'property' => 'og:type',
+          'content' => 'article',
+        ],
+      ],
+      'Facebook URL' => [
+        '#tag' => 'meta',
+        '#attributes' => [
+          'property' => 'og:url',
+          'content' => $og_url,
+        ],
+      ],
+      'Facebook site name' => [
+        '#tag' => 'meta',
+        '#attributes' => [
+          'property' => 'og:site_name',
+          'content' => $site_name,
+        ],
+      ],
+    ];
+
+    foreach ($tags as $key => $val) {
+      drupal_add_html_head($val, $key);
+    }
+
+    //// Add schema.org metadata.
+    // Add the schema.org meta tags separately, as they require their own div.
+    $itemscope = '<div itemscope itemtype = "http://schema.org/' . $itemtype . '">
+    <meta itemprop="name" content="' . htmlspecialchars($title) . '">
+    <meta itemprop="description" content="' . htmlspecialchars($abstract) . '">
+    <meta itemprop="image" content="' . $image . '">
+    </div>';
+
+    $script = '//--><!]]></script>' . $itemscope . '<script type="text/javascript"><!--//--><![CDATA[//><!--';
+    drupal_add_js($script, 'inline', 'footer');
+
+    // Don't do this again.
+    $has_run = TRUE;
   }
-  else {
-    $exists = TRUE;
+}
+
+/**
+ * Attempt to get the abstract for an object.
+ *
+ * Takes an array of objects. The first one with a usable abstract will be used.
+ * If none are usable, return empty string.
+ *
+ * @param array $objects
+ *
+ * @return string
+ *   The abstract, or empty string if not found.
+ */
+function _ism_object_abstract($objects) {
+  $abstracts = array();
+  foreach($objects as $object) {
+    if (!empty($object['MODS'])) {
+      $doc = new DOMDocument();
+      $doc->loadXML($object['MODS']->content);
+      $xpath = new DOMXPath($doc);
+      $xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3');
+      $xpath_results = $xpath->query(
+        variable_get('islandora_social_metatags_abstract_xpath', '/mods:mods/mods:abstract')
+      );
+      if (!empty($xpath_results->item(0)->nodeValue) && strlen($xpath_results->item(0)->nodeValue) > 0) {
+        $abstracts[] = $xpath_results->item(0)->nodeValue;
+      }
+    }
   }
- 
-// If the datastream does not exist, use the default image path. 
-  if (!$exists) {
-    $image = $base_url . variable_get('islandora_social_metatags_noimage', '/sites/all/modules/islandora/images/folder.png');
+  return implode(" :: ", $abstracts);
+}
+
+/**
+ * Get a suitable object to use for the image tag.
+ *
+ * Handle possible case where the object is a compound object,
+ * and continue recursively if the first child is also a compound object.
+ *
+ * @param \AbstractFedoraObject $object
+ *
+ * @return \AbstractFedoraObject|\FedoraObject
+ */
+function _ism_get_image_object(AbstractFedoraObject $object) {
+  // For the purpose of generating image tags, if this object is a compound, then
+  // switch to using the first child of this object.
+  if (in_array('islandora:compoundCModel', $object->models)) {
+    $parts = islandora_compound_object_get_parts($object->id);
+    if (!empty($parts)) {
+      $first_part = reset($parts);
+      $part_object = islandora_object_load($first_part);
+      if (!empty($part_object)) {
+        $object = $part_object;
+        // Recurse if this child is a compound object.
+        if (in_array('islandora:compoundCModel', $object->models)) {
+          $object = _ism_get_image_object($object);
+        }
+      }
+    }
   }
-
-  // Get Twitter user
-  $twitter_user = variable_get('islandora_social_metatags_twitter_user');
-
-  // Turns out that Twitter no longer recognizes older card types, so this is the only option.
-  $card_type = "summary_large_image";
-
-/*
-* Implements drupal_add_html_head() to inject the meta tags
-*/
-  $site_name = variable_get('site_name', 'Islandora');
-  $tags = array(
-    'Twitter card' => array(
-      '#tag' => 'meta',
-      '#attributes' => array(
-        'name' => 'twitter:card',
-        'content' => $card_type
-      )
-    ),
-    'Twitter Title' => array(
-      '#tag' => 'meta',
-      '#attributes' => array(
-        'name' => 'twitter:title',
-        'content' => $title
-      )
-    ),
-    'Facebook Title' => array(
-      '#tag' => 'meta',
-      '#attributes' => array(
-        'property' => 'og:title',
-        'content' => $title
-      )
-    ),
-    'Twitter image' => array(
-      '#tag' => 'meta',
-      '#attributes' => array(
-        'name' => 'twitter:image',
-        'content' => $image
-      )
-    ),
-    'Facebook image' => array(
-      '#tag' => 'meta',
-      '#attributes' => array(
-        'property' => 'og:image',
-        'content' => $image
-      )
-    ),
-    'Twitter site user' => array(
-      '#tag' => 'meta',
-      '#attributes' => array(
-        'name' => 'twitter:site',
-        'content' => $twitter_user
-      )
-    ),
-    'Twitter description' => array(
-      '#tag' => 'meta',
-      '#attributes' => array(
-        'name' => 'twitter:description',
-        'content' => $abstract 
-      )
-    ),
-    'Facebook description' => array(
-      '#tag' => 'meta',
-      '#attributes' => array(
-        'property' => 'og:description',
-        'content' => $abstract
-      )
-    ),
-    'Object type' => array(
-      '#tag' => 'meta',
-      '#attributes' => array(
-        'property' => 'og:type',
-        'content' => 'article'
-      )
-    ),
-    'Facebook URL' => array(
-      '#tag' => 'meta',
-      '#attributes' => array(
-        'property' => 'og:url',
-        'content' => $og_url
-      )
-    ),
-    'Facebook site name' => array(
-      '#tag' => 'meta',
-      '#attributes' => array(
-        'property' => 'og:site_name',
-        'content' => $site_name
-      )
-    )
-  );
-
-  foreach ($tags as $key => $val) {
-    drupal_add_html_head($val, $key);
-  }
-
-// Add the schema.org meta tags separately, as they require their own div.
-  print(
-    '<div itemscope itemtype = "http://schema.org/' . $itemtype . '">
-    <meta itemprop="name" content="' . $title . '">
-    <meta itemprop="description" content="' . $abstract . '">
-    <meta itemprop="image" content="' . $image . '"></div>'
-  );
+  return $object;
 }
