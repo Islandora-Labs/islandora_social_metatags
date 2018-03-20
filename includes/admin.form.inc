@@ -80,7 +80,7 @@ function islandora_social_metatags_admin_form($form, $form_settings) {
   $form['islandora_social_metatags_compound_title_delimiter'] = array(
     '#type' => 'textfield',
     '#title' => t('Compound Object Title Concatenation Delimiter'),
-    '#description' => t('If displaying the parent and child title, what characters should delimit them? <em>(No quotes, html tags or special characters permitted.)</em>'),
+    '#description' => t('If displaying both the parent and child title, what characters should delimit them? <em>(No quotes, html tags or special characters permitted.)</em>'),
     '#default_value' => variable_get('islandora_social_metatags_compound_title_delimiter', ': '),
   );
   $form['islandora_social_metatags_compound_abstract'] = array(
@@ -96,8 +96,8 @@ function islandora_social_metatags_admin_form($form, $form_settings) {
   );
   $form['islandora_social_metatags_compound_abstract_delimiter'] = array(
     '#type' => 'textfield',
-    '#title' => t('Compound Object Title Concatenation Delimiter'),
-    '#description' => t('If displaying the parent and child abstract, what characters should delimit them? <em>(No quotes, html tags or special characters permitted.)</em>'),
+    '#title' => t('Compound Object Abstract Concatenation Delimiter'),
+    '#description' => t('If displaying both the parent and child abstract, what characters should delimit them? <em>(No quotes, html tags or special characters permitted.)</em>'),
     '#default_value' => variable_get('islandora_social_metatags_compound_abstract_delimiter', ' :: '),
   );
 
