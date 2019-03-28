@@ -72,7 +72,7 @@ function islandora_social_metatags_islandora_view_object() {
       }
     }
     foreach ($title_objects as $key => $title_object) {
-      if(isset($object['MODS'])) {
+      if(isset($title_object['MODS'])) {
         $doc = new DOMDocument();
         $doc->loadXML($title_object['MODS']->content);
         $xpath = new DOMXPath($doc);
