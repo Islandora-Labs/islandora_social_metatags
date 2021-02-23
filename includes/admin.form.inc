@@ -100,6 +100,11 @@ function islandora_social_metatags_admin_form($form, $form_settings) {
     '#description' => t('If displaying both the parent and child abstract, what characters should delimit them? <em>(No quotes, html tags or special characters permitted.)</em>'),
     '#default_value' => variable_get('islandora_social_metatags_compound_abstract_delimiter', ' :: '),
   );
-
+  $form['islandora_social_metatags_norobots'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Disable search engine indexing'),
+    '#description' => t('Inserts a noindex tag to turn away web crawlers.'),
+    '#default_value' => variable_get('islandora_social_metatags_norobots', FALSE),
+  );
   return system_settings_form($form);
 }
