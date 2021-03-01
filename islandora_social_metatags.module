@@ -53,7 +53,7 @@ function islandora_social_metatags_islandora_view_object() {
     else {
       // Not compound, handle normally.
       $objects = array($object);
-    }
+    }  
 
     $abstract_objects = $title_objects = $objects;
 
@@ -222,6 +222,9 @@ function islandora_social_metatags_islandora_view_object() {
     * Implements drupal_add_html_head() to inject the meta tags
     */
     $site_name = variable_get('site_name', 'Islandora');
+
+    // Get norobots rules.
+    $norobots = variable_get('islandora_social_metatags_norobots', FALSE);
     $tags = [
       'Twitter card' => [
         '#tag' => 'meta',
@@ -301,6 +304,16 @@ function islandora_social_metatags_islandora_view_object() {
         ],
       ],
     ];
+
+    if ($norobots == 1) {
+     $tags['robots'] = [
+        '#tag' => 'meta',
+        '#attributes' => [
+          'name' => 'robots',
+          'content' => "noindex, nofollow",
+          ],
+      ];
+    }
 
     foreach ($tags as $key => $val) {
       drupal_add_html_head($val, $key);
